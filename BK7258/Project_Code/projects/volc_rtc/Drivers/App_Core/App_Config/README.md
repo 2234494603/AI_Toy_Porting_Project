@@ -1,0 +1,36 @@
+# AIDK AI 玩具开发板引脚
+
+本目录集中维护 `AIDK_AI玩具开发板_原理图.pdf` V1.0 对应的 BK7258 板级引脚。
+业务模块应优先引用 `aidk_board_pins.h`，不要继续在各模块中散落 GPIO 数字。
+
+## 外设与引脚
+
+| 外设 | BK7258 引脚 |
+| --- | --- |
+| NFC MFRC522 | UART：GPIO0/1；IRQ：GPIO53；MX：GPIO54；DTRQ：GPIO55 |
+| LCD1 | QSPI1：GPIO2/3/4；D/C：GPIO5；RESET：GPIO45 |
+| LCD2 | QSPI0：GPIO22/23/24；D/C：GPIO7；RESET：GPIO6 |
+| LCD 公共信号 | 背光 PWM：GPIO25；TE：GPIO44 |
+| 按键 | KEY1：GPIO12；KEY2：GPIO13；KEY3：GPIO8，均为低电平有效 |
+| 振动马达 | PWM3：GPIO9 |
+| 下载/调试串口 | UART0：RX GPIO10、TX GPIO11 |
+| SD NAND | CLK/CMD/D0/D1/D2/D3：GPIO14～GPIO19 |
+| SC7A20H | I2C0：SCL GPIO20、SDA GPIO21；INT1：GPIO48 |
+| 充电检测 | FULL_DET：GPIO26；5V_DET：GPIO51 |
+| GC2145 DVP | MCLK/RESET/PCLK/HSYNC/VSYNC：GPIO27～GPIO31；D0～D7：GPIO32～GPIO39 |
+| 摄像头/触摸 I2C | SCL GPIO42、SDA GPIO43 |
+| 摄像头电源 | GPIO49 |
+| 指示灯 | 红灯 GPIO40、绿灯 GPIO41 |
+| 触摸 | INT GPIO46、CS GPIO47 |
+| Audio PA 静音 | GPIO50 |
+| 外部 3.3V LDO 使能 | GPIO52 |
+
+USB DP/DM、VBAT ADC0、MICBIAS、MIC1/2、AUDLP/AUDLN 和射频天线是专用或模拟引脚，
+不作为普通 GPIO 配置。
+
+## 初始化约定
+
+- QSPI0/QSPI1 的 CLK、CS、DATA 由 QSPI 驱动在运行时映射，默认 GPIO 表不提前占用。
+- LCD D/C、RESET、背光，摄像头 RESET/电源及 LDO 使能由对应驱动切换为输出。
+- GPIO20/21、GPIO27、GPIO29～39 和 GPIO14～19 使用硬件复用。
+- GPIO40/41 默认作为普通输出；GPIO8/12/13、GPIO26、GPIO44/46/48/51/53 默认作为输入。

@@ -1,0 +1,9 @@
+{
+  "volc_access_key_id": "请填写火山引擎 AccessKey ID",
+  "volc_secret_access_key": "请填写火山引擎 SecretAccessKey",
+  "rtc_app_id": "6ab7750fd755df017a8abe2f",
+  "rtc_app_key": "请填写 Project_Chen 的 RTC AppKey",
+  "rtc_api_version": "2025-06-01",
+  "bind_host": "0.0.0.0",
+  "port": 8080
+}

@@ -1,0 +1,5 @@
+/home/lenovo/Project_Chen/bk_idk/tools/build_tools/part_table_tools/tempFiles/vendor_flash_partition.h
+/home/lenovo/Project_Chen/bk_idk/tools/build_tools/part_table_tools/tempFiles/vendor_flash_new.c
+/home/lenovo/Project_Chen/bk_idk/tools/build_tools/part_table_tools/tempFiles/partitions_new.csv
+/home/lenovo/Project_Chen/projects/volc_rtc/config/bk7258/partitions.csv
+/home/lenovo/Project_Chen/bk_idk/tools/build_tools/part_table_tools/tempFiles/partition_bk7256_ota_a_new.json

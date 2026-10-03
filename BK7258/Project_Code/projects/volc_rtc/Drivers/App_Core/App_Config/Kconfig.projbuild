@@ -1,0 +1,55 @@
+menu "volc_rtc Project Configuration"
+    config APP_FREERTOS_STARTUP
+        bool "启用应用层 FreeRTOS 启动入口"
+        default y
+        help
+            BK IDK 已在进入 main() 前启动 FreeRTOS 调度器。
+            此选项启用产品应用任务的统一启动入口，不会重复启动调度器。
+
+    config APP_SCREEN_STARTUP
+        bool "上电启动双屏显示通道"
+        depends on DUAL_SCREEN_AVI_PLAY || SINGLE_SCREEN_AVI_PLAY || SINGLE_SCREEN_FONT_DISPLAY
+        default y
+        help
+            在媒体服务与 CPU1 启动后打开双屏显示通道。
+            关闭后仍可由唤醒事件按需启动屏幕。
+
+    config LDO3V3_ENABLE
+        bool "启用外部 3.3V LDO"
+        default n
+
+    config LDO3V3_CTRL_GPIO
+        depends on LDO3V3_ENABLE
+        int "设置外部 3.3V LDO 控制 GPIO"
+        range 0 100
+        default 52
+				
+    config HARDWARE_SPEAKER_VER
+        int "选择扬声器硬件版本"
+        range 0 8
+        default 0
+
+    config HFP_HF_DEMO
+        bool "启用蓝牙免提通话（HFP HF）"
+        depends on BT && AUDIO_ADC && AUDIO_DAC
+        select AUDIO_RECORD
+        select AUDIO_PLAY
+        default y
+        help
+            将开发板作为手机的蓝牙免提设备。SCO 通话建立时暂停
+            Volc RTC/AI 音频，挂断后恢复 AI，避免麦克风和扬声器冲突。
+
+    config APP_BLUETOOTH_HFP_MSBC
+        bool "启用 HFP 宽带语音 mSBC"
+        depends on HFP_HF_DEMO
+        select SBC
+        default n
+        help
+            与手机协商 16 kHz mSBC；对端不支持时仍可回退 CVSD。
+
+    config APP_BLUETOOTH_DEVICE_NAME
+        string "手机搜索到的蓝牙设备名称前缀"
+        depends on HFP_HF_DEMO
+        default "Project_Chen"
+
+endmenu

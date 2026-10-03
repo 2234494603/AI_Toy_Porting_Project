@@ -1,0 +1,11 @@
+menu "Dual_screen_avi_play"
+    config DUAL_SCREEN_AVI_PLAY
+    bool "Enable DUAL_SCREEN_AVI_PLAY"
+    default n
+
+    config ROBOT_FACE_UI
+    bool "Enable Robot Face LVGL UI"
+    depends on DUAL_SCREEN_AVI_PLAY && LVGL
+    default n
+
+endmenu

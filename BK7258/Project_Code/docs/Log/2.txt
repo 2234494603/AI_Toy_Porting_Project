@@ -1,0 +1,81 @@
+diff --git a/bk_idk/tools/build_tools/cmake/utilities.cmake b/bk_idk/tools/build_tools/cmake/utilities.cmake
+index 7043ea69..23e61bed 100644
+--- a/bk_idk/tools/build_tools/cmake/utilities.cmake
++++ b/bk_idk/tools/build_tools/cmake/utilities.cmake
+@@ -114,9 +114,9 @@ function(target_add_binary_data target embed_file embed_type)
+         -D "SOURCE_FILE=${embed_srcfile}"
+         ${rename_to_arg}
+         -D "FILE_TYPE=${embed_type}"
+-        -P "${armino_path}/tools/cmake/scripts/data_file_embed_asm.cmake"
++        -P "${armino_path}/tools/build_tools/cmake/scripts/data_file_embed_asm.cmake"
+         MAIN_DEPENDENCY "${embed_file}"
+-        DEPENDS "${armino_path}/tools/cmake/scripts/data_file_embed_asm.cmake" ${__DEPENDS}
++        DEPENDS "${armino_path}/tools/build_tools/cmake/scripts/data_file_embed_asm.cmake" ${__DEPENDS}
+         WORKING_DIRECTORY "${build_dir}"
+         VERBATIM)
+ 
+diff --git a/projects/common_components/bk_app_event/app_event.c b/projects/common_components/bk_app_event/app_event.c
+index 349b7705..72b342bc 100644
+--- a/projects/common_components/bk_app_event/app_event.c
++++ b/projects/common_components/bk_app_event/app_event.c
+@@ -49,6 +49,7 @@ static beken_mutex_t s_event_mutex = NULL;
+ #if CONFIG_AUD_INTF_SUPPORT_PROMPT_TONE
+ static prompt_tone_url_info_t s_event_prompt_tone_info = {0};
+ static uint8_t s_prompt_tone_status; //0 stop 1 play
++static volatile bool s_prompt_tone_suppressed = false;
+ 
+ #if CONFIG_PROMPT_TONE_SOURCE_VFS
+ #if CONFIG_PROMPT_TONE_CODEC_MP3
+@@ -107,6 +108,19 @@ static char agent_start_fail_prompt_tone_path[] = "/agent_start_fail_16k_mono_16
+ #endif  //CONFIG_PROMPT_TONE_SOURCE_VFS
+ #endif  //CONFIG_AUD_INTF_SUPPORT_PROMPT_TONE
+ 
++void app_event_set_prompt_tone_suppressed(bool suppressed)
++{
++#if CONFIG_AUD_INTF_SUPPORT_PROMPT_TONE
++    if (s_prompt_tone_suppressed != suppressed)
++    {
++        s_prompt_tone_suppressed = suppressed;
++        LOGI("event prompt tones %s\n", suppressed ? "suppressed" : "enabled");
++    }
++#else
++    (void)suppressed;
++#endif
++}
++
+ #if (CONFIG_DUAL_SCREEN_AVI_PLAY || CONFIG_SINGLE_SCREEN_AVI_PLAY || CONFIG_SINGLE_SCREEN_FONT_DISPLAY)
+ extern void lvgl_app_init(void);
+ extern void lvgl_app_deinit(void);
+@@ -203,6 +217,12 @@ static bk_err_t app_play_prompt_tone(app_evt_type_t event)
+     bool play_flag = true;
+     bk_err_t ret = BK_FAIL;
+ 
++    if (s_prompt_tone_suppressed)
++    {
++        LOGI("skip event prompt tone while power-on prompt is active: %d\n", event);
++        return BK_OK;
++    }
++
+ #if (CONFIG_A2DP_SINK_DEMO || CONFIG_HFP_HF_DEMO)
+     if(app_audio_arbiter_get_current_play_entry() == AUDIO_SOURCE_ENTRY_AI ||
+                     app_audio_arbiter_get_current_play_entry() == AUDIO_SOURCE_ENTRY_END)
+diff --git a/projects/common_components/bk_app_event/app_event.h b/projects/common_components/bk_app_event/app_event.h
+index 2b0119c3..d6216f7a 100644
+--- a/projects/common_components/bk_app_event/app_event.h
++++ b/projects/common_components/bk_app_event/app_event.h
+@@ -1,5 +1,7 @@
+ #pragma once
+ 
++#include <stdbool.h>
++
+ typedef enum
+ {
+     APP_EVT_ASR_WAKEUP = 0,
+@@ -32,6 +34,7 @@ typedef enum
+ 
+ void app_event_init(void);
+ bk_err_t app_event_send_msg(uint32_t event, uint32_t param);
++void app_event_set_prompt_tone_suppressed(bool suppressed);
+ 
+ typedef struct
+ {

@@ -1,0 +1,9 @@
+{
+  "volc_access_key_id": "AKLTNTdiNTE5OTkwMjQzNDc4MGJlNmNjZGIzYzNiOGFjNTI",
+  "volc_secret_access_key": "TnpGaE1EaGhZak5rWW1aak5EQXpNRGhqTnpGa1pqYzJaVGd6TWpkalpHRQ==",
+  "rtc_app_id": "6ab7750fd755df017a8abe2f",
+  "rtc_app_key": "e34e8ac010a24289a9b2dbb89ad2c6df",
+  "rtc_api_version": "2025-06-01",
+  "bind_host": "0.0.0.0",
+  "port": 8080
+}

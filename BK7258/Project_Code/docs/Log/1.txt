@@ -1,0 +1,323 @@
+diff --git a/bk_idk/tools/build_tools/cmake/utilities.cmake b/bk_idk/tools/build_tools/cmake/utilities.cmake
+index 7043ea69..23e61bed 100644
+--- a/bk_idk/tools/build_tools/cmake/utilities.cmake
++++ b/bk_idk/tools/build_tools/cmake/utilities.cmake
+@@ -114,9 +114,9 @@ function(target_add_binary_data target embed_file embed_type)
+         -D "SOURCE_FILE=${embed_srcfile}"
+         ${rename_to_arg}
+         -D "FILE_TYPE=${embed_type}"
+-        -P "${armino_path}/tools/cmake/scripts/data_file_embed_asm.cmake"
++        -P "${armino_path}/tools/build_tools/cmake/scripts/data_file_embed_asm.cmake"
+         MAIN_DEPENDENCY "${embed_file}"
+-        DEPENDS "${armino_path}/tools/cmake/scripts/data_file_embed_asm.cmake" ${__DEPENDS}
++        DEPENDS "${armino_path}/tools/build_tools/cmake/scripts/data_file_embed_asm.cmake" ${__DEPENDS}
+         WORKING_DIRECTORY "${build_dir}"
+         VERBATIM)
+ 
+diff --git a/projects/common_components/bk_app_event/app_event.c b/projects/common_components/bk_app_event/app_event.c
+index 349b7705..72b342bc 100644
+--- a/projects/common_components/bk_app_event/app_event.c
++++ b/projects/common_components/bk_app_event/app_event.c
+@@ -49,6 +49,7 @@ static beken_mutex_t s_event_mutex = NULL;
+ #if CONFIG_AUD_INTF_SUPPORT_PROMPT_TONE
+ static prompt_tone_url_info_t s_event_prompt_tone_info = {0};
+ static uint8_t s_prompt_tone_status; //0 stop 1 play
++static volatile bool s_prompt_tone_suppressed = false;
+ 
+ #if CONFIG_PROMPT_TONE_SOURCE_VFS
+ #if CONFIG_PROMPT_TONE_CODEC_MP3
+@@ -107,6 +108,19 @@ static char agent_start_fail_prompt_tone_path[] = "/agent_start_fail_16k_mono_16
+ #endif  //CONFIG_PROMPT_TONE_SOURCE_VFS
+ #endif  //CONFIG_AUD_INTF_SUPPORT_PROMPT_TONE
+ 
++void app_event_set_prompt_tone_suppressed(bool suppressed)
++{
++#if CONFIG_AUD_INTF_SUPPORT_PROMPT_TONE
++    if (s_prompt_tone_suppressed != suppressed)
++    {
++        s_prompt_tone_suppressed = suppressed;
++        LOGI("event prompt tones %s\n", suppressed ? "suppressed" : "enabled");
++    }
++#else
++    (void)suppressed;
++#endif
++}
++
+ #if (CONFIG_DUAL_SCREEN_AVI_PLAY || CONFIG_SINGLE_SCREEN_AVI_PLAY || CONFIG_SINGLE_SCREEN_FONT_DISPLAY)
+ extern void lvgl_app_init(void);
+ extern void lvgl_app_deinit(void);
+@@ -203,6 +217,12 @@ static bk_err_t app_play_prompt_tone(app_evt_type_t event)
+     bool play_flag = true;
+     bk_err_t ret = BK_FAIL;
+ 
++    if (s_prompt_tone_suppressed)
++    {
++        LOGI("skip event prompt tone while power-on prompt is active: %d\n", event);
++        return BK_OK;
++    }
++
+ #if (CONFIG_A2DP_SINK_DEMO || CONFIG_HFP_HF_DEMO)
+     if(app_audio_arbiter_get_current_play_entry() == AUDIO_SOURCE_ENTRY_AI ||
+                     app_audio_arbiter_get_current_play_entry() == AUDIO_SOURCE_ENTRY_END)
+diff --git a/projects/common_components/bk_app_event/app_event.h b/projects/common_components/bk_app_event/app_event.h
+index 2b0119c3..d6216f7a 100644
+--- a/projects/common_components/bk_app_event/app_event.h
++++ b/projects/common_components/bk_app_event/app_event.h
+@@ -1,5 +1,7 @@
+ #pragma once
+ 
++#include <stdbool.h>
++
+ typedef enum
+ {
+     APP_EVT_ASR_WAKEUP = 0,
+@@ -32,6 +34,7 @@ typedef enum
+ 
+ void app_event_init(void);
+ bk_err_t app_event_send_msg(uint32_t event, uint32_t param);
++void app_event_set_prompt_tone_suppressed(bool suppressed);
+ 
+ typedef struct
+ {
+diff --git a/projects/volc_rtc/Drivers/App_Core/Audio/app_audio.c b/projects/volc_rtc/Drivers/App_Core/Audio/app_audio.c
+index a66c2f08..ffcb5955 100644
+--- a/projects/volc_rtc/Drivers/App_Core/Audio/app_audio.c
++++ b/projects/volc_rtc/Drivers/App_Core/Audio/app_audio.c
+@@ -2,8 +2,13 @@
+ #include <components/log.h>
+ #include <driver/pwr_clk.h>
+ #include <modules/pm.h>
++#include <os/os.h>
++#include <stdbool.h>
+ 
+ #include "audio_engine.h"
++#include "aud_intf.h"
++#include "aud_intf_types.h"
++#include "app_event.h"
+ #include "media_service.h"
+ 
+ #if CONFIG_SYS_CPU0
+@@ -12,6 +17,99 @@
+ 
+ #define TAG "APP_AUDIO"
+ 
++#if CONFIG_SYS_CPU0 && CONFIG_AUD_INTF_SUPPORT_PROMPT_TONE && \
++    CONFIG_AUD_INTF_SUPPORT_MULTIPLE_SPK_SOURCE_TYPE
++#define POWER_ON_PROMPT_DELAY_MS       (1200)
++#define POWER_ON_PROMPT_CHUNK_BYTES    (640)
++#define POWER_ON_PROMPT_TAIL_DELAY_MS  (500)
++#define POWER_ON_PROMPT_TASK_STACK     (2048)
++
++extern const uint8_t _binary_power_on_16k_mono_16bit_en_pcm_start[];
++extern const uint8_t _binary_power_on_16k_mono_16bit_en_pcm_end[];
++
++static beken_thread_t s_power_on_prompt_thread = NULL;
++
++static void app_audio_power_on_prompt_thread(beken_thread_arg_t arg)
++{
++    const uint8_t *cursor = _binary_power_on_16k_mono_16bit_en_pcm_start;
++    const uint8_t *end = _binary_power_on_16k_mono_16bit_en_pcm_end;
++    aud_spk_source_info_t source_info = {
++        .type = SPK_SOURCE_TYPE_PROMPT_TONE,
++        .spk_info = {
++            .channel_number = 1,
++            .sample_rate = 16000,
++            .sample_bits = 16,
++        },
++    };
++    bk_err_t ret;
++    bool source_started = false;
++
++    (void)arg;
++    rtos_delay_milliseconds(POWER_ON_PROMPT_DELAY_MS);
++
++    ret = bk_aud_intf_voc_init_audio_act();
++    if (ret != BK_OK)
++    {
++        BK_LOGE(TAG, "power-on prompt audio task init failed: %d\n", ret);
++        goto exit;
++    }
++
++    while (cursor < end)
++    {
++        uint32_t remaining = (uint32_t)(end - cursor);
++        uint32_t chunk_size = remaining > POWER_ON_PROMPT_CHUNK_BYTES
++                                  ? POWER_ON_PROMPT_CHUNK_BYTES
++                                  : remaining;
++        audio_write_multiple_spk_data_req_t write_req = {
++            .data = (uint8_t *)cursor,
++            .data_len = chunk_size,
++            .sampl_rate = 16000,
++            .channel_num = 1,
++            .wait_time = 3000,
++        };
++        int written = (int)bk_aud_intf_voc_write_multiple_spk_data(&write_req);
++
++        if (written <= 0)
++        {
++            BK_LOGE(TAG, "power-on prompt write failed: %d\n", written);
++            break;
++        }
++
++        cursor += (uint32_t)written;
++
++        /* Preload one frame before switching the speaker source.  Switching
++         * first lets the audio ISR observe an empty prompt buffer and stop it. */
++        if (!source_started)
++        {
++            ret = bk_aud_intf_voc_set_spk_source_type(&source_info);
++            if (ret != BK_OK)
++            {
++                BK_LOGE(TAG, "power-on prompt source select failed: %d\n", ret);
++                break;
++            }
++            source_started = true;
++        }
++    }
++
++    if (source_started)
++    {
++        rtos_delay_milliseconds(POWER_ON_PROMPT_TAIL_DELAY_MS);
++
++        source_info.type = SPK_SOURCE_TYPE_VOICE;
++        source_info.spk_info.channel_number = 0;
++        source_info.spk_info.sample_rate = 0;
++        source_info.spk_info.sample_bits = 0;
++        bk_aud_intf_voc_set_spk_source_type(&source_info);
++    }
++
++    bk_aud_intf_voc_deinit_audio_act();
++exit:
++    app_event_set_prompt_tone_suppressed(false);
++    s_power_on_prompt_thread = NULL;
++    rtos_delete_thread(NULL);
++}
++#endif
++
+ void app_audio_background_init(void)
+ {
+ #if CONFIG_SYS_CPU0
+@@ -19,6 +117,14 @@ void app_audio_background_init(void)
+ #endif
+ }
+ 
++void app_audio_reserve_power_on_prompt(void)
++{
++#if CONFIG_SYS_CPU0 && CONFIG_AUD_INTF_SUPPORT_PROMPT_TONE && \
++    CONFIG_AUD_INTF_SUPPORT_MULTIPLE_SPK_SOURCE_TYPE
++    app_event_set_prompt_tone_suppressed(true);
++#endif
++}
++
+ void app_audio_service_init(void)
+ {
+     media_service_init();
+@@ -48,3 +154,32 @@ void app_audio_start_coprocessor(void)
+                                     PM_POWER_MODULE_STATE_ON);
+ #endif
+ }
++
++void app_audio_play_power_on_prompt_async(void)
++{
++#if CONFIG_SYS_CPU0 && CONFIG_AUD_INTF_SUPPORT_PROMPT_TONE && \
++    CONFIG_AUD_INTF_SUPPORT_MULTIPLE_SPK_SOURCE_TYPE
++    if (s_power_on_prompt_thread != NULL)
++    {
++        BK_LOGW(TAG, "power-on prompt is already scheduled\n");
++        return;
++    }
++
++    /* Keep this idempotent so callers that did not reserve during early boot
++     * still get exclusive prompt playback. */
++    app_event_set_prompt_tone_suppressed(true);
++
++    bk_err_t ret = rtos_create_thread(&s_power_on_prompt_thread,
++                                      BEKEN_DEFAULT_WORKER_PRIORITY - 1,
++                                      "power_on_prompt",
++                                      (beken_thread_function_t)app_audio_power_on_prompt_thread,
++                                      POWER_ON_PROMPT_TASK_STACK,
++                                      NULL);
++    if (ret != BK_OK)
++    {
++        app_event_set_prompt_tone_suppressed(false);
++        s_power_on_prompt_thread = NULL;
++        BK_LOGE(TAG, "create power-on prompt task failed: %d\n", ret);
++    }
++#endif
++}
+diff --git a/projects/volc_rtc/Drivers/App_Core/Audio/app_audio.h b/projects/volc_rtc/Drivers/App_Core/Audio/app_audio.h
+index 875cc918..3b90e0e4 100644
+--- a/projects/volc_rtc/Drivers/App_Core/Audio/app_audio.h
++++ b/projects/volc_rtc/Drivers/App_Core/Audio/app_audio.h
+@@ -1,6 +1,8 @@
+ #pragma once
+ 
+ void app_audio_background_init(void);
++void app_audio_reserve_power_on_prompt(void);
+ void app_audio_frontend_init(void);
+ void app_audio_service_init(void);
+ void app_audio_start_coprocessor(void);
++void app_audio_play_power_on_prompt_async(void);
+diff --git a/projects/volc_rtc/Drivers/App_Core/app_core.c b/projects/volc_rtc/Drivers/App_Core/app_core.c
+index cd632fb3..3f9b9c6e 100644
+--- a/projects/volc_rtc/Drivers/App_Core/app_core.c
++++ b/projects/volc_rtc/Drivers/App_Core/app_core.c
+@@ -32,6 +32,7 @@ void app_core_boot_init(void)
+     app_nfc_init();
+     app_audio_frontend_init();
+     app_audio_start_coprocessor();
++    app_audio_play_power_on_prompt_async();
+     app_lvgl_startup();
+ 
+     app_wireless_services_init();
+diff --git a/projects/volc_rtc/main.c b/projects/volc_rtc/main.c
+index 23d9e63c..6165d40b 100644
+--- a/projects/volc_rtc/main.c
++++ b/projects/volc_rtc/main.c
+@@ -3,6 +3,7 @@
+ #include <components/system.h>
+ #include <os/os.h>
+ 
++#include "app_audio.h"
+ #include "app_core.h"
+ #include "app_freertos_startup.h"
+ #include "app_power.h"
+@@ -15,6 +16,8 @@ int main(void)
+     if (bk_misc_get_reset_reason() != RESET_SOURCE_FORCE_DEEPSLEEP)
+     {
+ #if CONFIG_SYS_CPU0
++        /* Make JARVIS the first application audio resource of a cold boot. */
++        app_audio_reserve_power_on_prompt();
+         rtos_set_user_app_entry((beken_thread_function_t)app_freertos_startup);
+ #endif
+         bk_init();
+diff --git a/projects/volc_rtc/main/CMakeLists.txt b/projects/volc_rtc/main/CMakeLists.txt
+index 6771f1b8..38f84c4b 100644
+--- a/projects/volc_rtc/main/CMakeLists.txt
++++ b/projects/volc_rtc/main/CMakeLists.txt
+@@ -21,6 +21,7 @@ set(incs
+     ${app_core_dir}/Wireless
+ )
+ set(srcs)
++set(embed_files)
+ 
+ list(APPEND srcs
+     ../main.c
+@@ -45,6 +46,9 @@ if (CONFIG_SYS_CPU0)
+ list(APPEND srcs
+     audio_para.c
+ )
++list(APPEND embed_files
++    ../resources/audio/power_on_16k_mono_16bit_en.pcm
++)
+ endif()
+ 
+ if (CONFIG_OVERRIDE_FLASH_PARTITION)
+@@ -55,6 +59,7 @@ endif()
+ 
+ armino_component_register(SRCS "${srcs}" 
+     INCLUDE_DIRS "${incs}" 
++    EMBED_FILES "${embed_files}"
+     PRIV_REQUIRES bk_init lwip_intf_v2_1 VolcEngineRTCLite media_service multimedia avdk_utils mbedtls json wanson 
+     bk_wanson_asr bk_factory_config bk_nfc bk_app_event bk_countdown bk_led_blink bk_motor bk_boarding_service 
+     bk_smart_config bk_bt bk_key_app asr audio_engine video_engine network_transfer
