@@ -1,0 +1,24 @@
+--cpu Cortex-M3
+".\objects\bootloader_main.o"
+".\objects\bootloader_it.o"
+".\objects\stm32f1xx_hal_msp.o"
+".\objects\system_stm32f1xx.o"
+".\objects\gpio.o"
+".\objects\usart.o"
+".\objects\stm32f1xx_hal.o"
+".\objects\stm32f1xx_hal_cortex.o"
+".\objects\stm32f1xx_hal_dma.o"
+".\objects\stm32f1xx_hal_exti.o"
+".\objects\stm32f1xx_hal_flash.o"
+".\objects\stm32f1xx_hal_flash_ex.o"
+".\objects\stm32f1xx_hal_gpio.o"
+".\objects\stm32f1xx_hal_gpio_ex.o"
+".\objects\stm32f1xx_hal_pwr.o"
+".\objects\stm32f1xx_hal_rcc.o"
+".\objects\stm32f1xx_hal_rcc_ex.o"
+".\objects\stm32f1xx_hal_uart.o"
+".\objects\startup_stm32f103xb.o"
+--strict --scatter ".\objects\STM32F103_OTA_Bootloader.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\STM32F103_OTA_Bootloader.map" -o .\objects\STM32F103_OTA_Bootloader.axf

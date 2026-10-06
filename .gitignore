@@ -1,0 +1,35 @@
+**/__pycache__/
+*.py[cod]
+*.log
+/build/
+/BK7258/build/
+**/build/
+**/CMakeFiles/
+**/CMakeCache.txt
+/ADB1_OTA/Project/Build/*
+!/ADB1_OTA/Project/Build/.gitkeep
+
+# Rebuildable firmware artifacts and linker reports.
+*.elf
+*.map
+*.axf
+*.bin
+*.hex
+*.lst
+
+# Duplicate SDK reference documentation; project-specific documentation remains tracked.
+/BK7258/docs/
+/BK7258/bk_idk/docs/
+
+# Temporary local record.
+/1.txt
+
+# Never commit cloud credentials or runtime-private configuration.
+/BK7258/projects/volc_rtc/Drivers/Resources/AI_Resources/AccessKey.txt
+/BK7258/projects/volc_rtc/Drivers/Resources/AI_Resources/ApiKey.txt
+/BK7258/projects/volc_rtc/Drivers/Resources/AI_Resources/默认业务空间-apiKey-7456291.csv
+/BK7258/projects/volc_rtc/Drivers/Resources/Server/源码/private/
+
+# Windows Zone.Identifier
+*Zone.Identifier*
+*:Zone.Identifier

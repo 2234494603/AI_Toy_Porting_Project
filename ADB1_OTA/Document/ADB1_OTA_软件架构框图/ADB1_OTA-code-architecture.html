@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ADB1 OTA 代码架构与程序校验</title>
+  <style>
+    :root { color-scheme: light dark; --bg:#f5f8fb; --panel:#fff; --ink:#16324a; --muted:#52708a; --line:#cfe0ed; --accent:#0b8faa; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#101923; --panel:#172330; --ink:#e8f2fa; --muted:#9eb7cb; --line:#344b60; --accent:#49c7e3; } }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:"Microsoft YaHei",system-ui,sans-serif; }
+    header { max-width:1440px; margin:auto; padding:28px 32px 18px; }
+    h1 { margin:0; font-size:26px; } p { color:var(--muted); line-height:1.6; }
+    .facts { display:flex; flex-wrap:wrap; gap:9px; margin-top:14px; }
+    .facts span { border:1px solid var(--line); background:var(--panel); padding:6px 10px; border-radius:999px; font-size:13px; }
+    main { max-width:1440px; margin:auto; padding:0 20px 30px; }
+    .tabs { display:flex; flex-wrap:wrap; gap:8px; padding:10px; border:1px solid var(--line); border-bottom:0; background:var(--panel); border-radius:14px 14px 0 0; }
+    button { border:1px solid var(--line); border-radius:9px; padding:9px 13px; background:transparent; color:var(--ink); font:inherit; cursor:pointer; }
+    button[aria-selected="true"] { border-color:var(--accent); background:var(--accent); color:white; font-weight:700; }
+    .pane { display:none; min-height:760px; border:1px solid var(--line); border-radius:0 0 14px 14px; overflow:hidden; background:var(--panel); }
+    .pane.active { display:block; }
+    iframe { width:100%; height:calc(100vh - 250px); min-height:760px; border:0; display:block; background:var(--panel); }
+    .notice { margin:0; padding:14px 18px; border-bottom:1px solid var(--line); background:color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+    code { font-family:ui-monospace,Consolas,monospace; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ADB1 OTA：代码架构与程序校验</h1>
+    <p>单一阅读入口。图中的节点均可查看对应源码路径与行号；逐代码索引覆盖 APP、Bootloader、HAL 与 CMSIS 的职责及校验关系。</p>
+    <div class="facts"><span>APP：0x08004000 / 47 KB</span><span>Metadata：0x0800FC00</span><span>协议 CRC16</span><span>镜像 CRC32 + 向量表</span><span>状态：PENDING → DOWNLOADING → VERIFIED → CONFIRMED</span></div>
+  </header>
+  <main>
+    <div class="tabs" role="tablist" aria-label="文档内容">
+      <button role="tab" aria-selected="true" aria-controls="architecture" id="tab-architecture">总体架构</button>
+      <button role="tab" aria-selected="false" aria-controls="code-flow" id="tab-code-flow">代码程序框图</button>
+      <button role="tab" aria-selected="false" aria-controls="workflow" id="tab-workflow">程序校验流程</button>
+      <button role="tab" aria-selected="false" aria-controls="lifecycle" id="tab-lifecycle">OTA 状态机</button>
+      <button role="tab" aria-selected="false" aria-controls="code-index" id="tab-code-index">逐代码索引</button>
+    </div>
+    <section class="pane active" role="tabpanel" id="architecture" aria-labelledby="tab-architecture"><iframe title="ADB1 OTA 总体架构" src="01-architecture/ADB1_OTA-system-architecture.html"></iframe></section>
+    <section class="pane" role="tabpanel" id="code-flow" aria-labelledby="tab-code-flow"><iframe title="ADB1 OTA 代码级程序框图" src="05-code-program-flow/ADB1_OTA-code-program-flow.html"></iframe></section>
+    <section class="pane" role="tabpanel" id="workflow" aria-labelledby="tab-workflow"><iframe title="ADB1 OTA 程序校验流程" src="02-validation-workflow/ADB1_OTA-program-validation-workflow.html"></iframe></section>
+    <section class="pane" role="tabpanel" id="lifecycle" aria-labelledby="tab-lifecycle"><iframe title="ADB1 OTA 状态生命周期" src="03-ota-lifecycle/ADB1_OTA-state-lifecycle.html"></iframe></section>
+    <section class="pane" role="tabpanel" id="code-index" aria-labelledby="tab-code-index"><p class="notice">完整的逐文件、逐函数校验说明（含代码行号、Flash 布局、错误码、掉电行为与安全边界）如下：</p><iframe title="ADB1 OTA 程序校验代码索引" src="04-code-index/ADB1_OTA-程序校验代码索引.md"></iframe></section>
+  </main>
+  <script>
+    const buttons = [...document.querySelectorAll('[role="tab"]')];
+    const panes = [...document.querySelectorAll('[role="tabpanel"]')];
+    buttons.forEach(button => button.addEventListener('click', () => {
+      buttons.forEach(item => item.setAttribute('aria-selected', String(item === button)));
+      panes.forEach(pane => pane.classList.toggle('active', pane.id === button.getAttribute('aria-controls')));
+    }));
+  </script>
+</body>
+</html>

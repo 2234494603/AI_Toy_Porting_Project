@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "lifecycle",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\03-ota-lifecycle\\ADB1_OTA-state-lifecycle.json",
+    "sha256": "a98cd592170662d2c5dacdf4b094e271b2be9ee439044eb326b87c2ad0820c4d",
+    "bytes": 10117
+  },
+  "artifact": {
+    "path": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\03-ota-lifecycle\\ADB1_OTA-state-lifecycle.html",
+    "sha256": "0265ee70810062223311c21ffb404e874348ef910e2c6046b2d41f3b3f361274",
+    "bytes": 772867
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\03-ota-lifecycle\\adb1_ota-state-lifecycle.finalize.json",
+    "summaryReceipt": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\03-ota-lifecycle\\adb1_ota-state-lifecycle.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\03-ota-lifecycle\\adb1_ota-state-lifecycle.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.0.1",
+    "availableVersion": "3.0.1",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-06T05:40:51.405Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 6993,
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "resolvedCrossovers": 1,
+      "routesOverSuggestedBends": 1,
+      "routesOverSuggestedStretch": 1
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [
+        {
+          "left": {
+            "id": "t_trial_confirmed",
+            "from": "trial_app",
+            "to": "confirmed",
+            "label": "",
+            "collectionIndex": 6,
+            "artifactIndex": 7
+          },
+          "right": {
+            "id": "t_download_interrupt",
+            "from": "downloading",
+            "to": "interrupted",
+            "label": "掉电 / 复位 / 超时",
+            "collectionIndex": 8,
+            "artifactIndex": 9
+          },
+          "point": [
+            735.75,
+            272
+          ]
+        }
+      ],
+      "detours": [
+        {
+          "relationship": {
+            "id": "t_download_interrupt",
+            "from": "downloading",
+            "to": "interrupted",
+            "label": "掉电 / 复位 / 超时",
+            "collectionIndex": 8,
+            "artifactIndex": 9
+          },
+          "bends": 4,
+          "stretch": 1
+        },
+        {
+          "relationship": {
+            "id": "t_verify_invalid",
+            "from": "verifying",
+            "to": "invalid_image",
+            "label": "",
+            "collectionIndex": 9,
+            "artifactIndex": 10
+          },
+          "bends": 2,
+          "stretch": 1.73,
+          "directCorridorBlockers": [
+            {
+              "id": "verified",
+              "label": "VERIFIED",
+              "box": [
+                1034,
+                240,
+                140,
+                64
+              ]
+            }
+          ]
+        }
+      ],
+      "truncated": false
+    },
+    "hints": [
+      "trial_app → confirmed crosses downloading → interrupted: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "downloading → interrupted needs 4 bends: move node downloading or interrupted so they share a row or column with matching centers, or sit diagonally with a clear corner."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

@@ -1,0 +1,378 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "showcase",
+  "startedAt": "2026-10-06T10:43:06.275Z",
+  "specification": {
+    "path": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.json",
+    "sha256": "584fbdba54d1d8757a448172339e97c334f479ffb0a9d2b8243f9b11c7c172ec",
+    "bytes": 5806
+  },
+  "artifact": {
+    "path": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+    "sha256": "0622344553cb11785742e384f90679978793a6d4970e5f580f6ca7baf383088b",
+    "bytes": 754096
+  },
+  "stages": {
+    "validate": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": null,
+      "execution": "embedded-in-deliver",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "D:\\ProgramData\\AI_Agent\\Support_Skill\\Archify\\archify\\bin\\archify.mjs",
+        "deliver",
+        "workflow",
+        "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.json",
+        "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "\\\\wsl.localhost\\Ubuntu\\home\\lenovo\\Project_Chen",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "validate",
+        "specification": {
+          "sha256": "584fbdba54d1d8757a448172339e97c334f479ffb0a9d2b8243f9b11c7c172ec",
+          "bytes": 5806
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    "deliver": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 2197,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "D:\\ProgramData\\AI_Agent\\Support_Skill\\Archify\\archify\\bin\\archify.mjs",
+        "deliver",
+        "workflow",
+        "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.json",
+        "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+        "--quality",
+        "showcase",
+        "--repo-root",
+        "\\\\wsl.localhost\\Ubuntu\\home\\lenovo\\Project_Chen",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "receiptId": "d01f4150-c80c-409a-9711-6ac83c6a01ed",
+        "ok": true,
+        "command": "deliver",
+        "type": "workflow",
+        "input": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.json",
+        "output": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+        "specification": {
+          "sha256": "584fbdba54d1d8757a448172339e97c334f479ffb0a9d2b8243f9b11c7c172ec",
+          "bytes": 5806
+        },
+        "artifact": {
+          "sha256": "0622344553cb11785742e384f90679978793a6d4970e5f580f6ca7baf383088b",
+          "bytes": 754096
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        },
+        "evidence": {
+          "verified": true,
+          "repository": "https://gitcode.com/Orange-341024489/BK7258_AI_Voice_Assistant.git",
+          "revision": "848dbfa74b15c13ca8e0ec8faa57a9877910c8f0",
+          "references": 12,
+          "linkMode": "local-only"
+        },
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      }
+    },
+    "check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 316,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "D:\\ProgramData\\AI_Agent\\Support_Skill\\Archify\\archify\\bin\\archify.mjs",
+        "check",
+        "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+        "--require-provenance"
+      ],
+      "receipt": {
+        "ok": true,
+        "file": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+        "artifact": {
+          "sha256": "0622344553cb11785742e384f90679978793a6d4970e5f580f6ca7baf383088b",
+          "bytes": 754096
+        },
+        "checks": [
+          {
+            "name": "single_svg",
+            "ok": true,
+            "details": [
+              "found 1 <svg> block(s)"
+            ]
+          },
+          {
+            "name": "finite_svg",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "orthogonal_arrows",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "label_route_clearance",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_crossings",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_corridors",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "container_border_runs",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "route_rhythm",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "legend_clearance",
+            "ok": true,
+            "details": []
+          }
+        ],
+        "composition": {
+          "schemaVersion": 1,
+          "profile": "showcase",
+          "status": "pass",
+          "summary": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "metrics": {
+            "properCrossings": 0,
+            "resolvedCrossovers": 0,
+            "ambiguousCorridors": 0,
+            "arrowheadCollisions": 0,
+            "containerBorderRuns": 0,
+            "labelRouteClearanceIssues": 0,
+            "labelCanvasOverflowIssues": 0,
+            "minLabelRouteClearance": 159.1,
+            "desktopReadabilityIssues": 0,
+            "viewportHeightIssues": 0,
+            "minProjectedNodeTextPx": 6,
+            "maxBends": 0,
+            "routesOverSuggestedBends": 0,
+            "maxStretch": 1,
+            "routesOverSuggestedStretch": 0,
+            "minSegmentPx": 104.4,
+            "minInteriorSegmentPx": null,
+            "shortSegmentCount": 0,
+            "shortEndpointSegmentCount": 0,
+            "shortInteriorSegmentCount": 0,
+            "microSegmentCount": 0
+          },
+          "suggestedLimits": {
+            "bendsPerRelationship": 2,
+            "stretch": 1.35,
+            "segmentPx": 16,
+            "microSegmentPx": 8
+          },
+          "routeReview": {
+            "crossings": [],
+            "detours": []
+          },
+          "leadingSpace": {
+            "measured": false,
+            "reviewSuggested": false
+          },
+          "desktopReadability": {
+            "budgetBasis": "legacy-930",
+            "readerContract": "declared-wide-v1",
+            "availableDiagramWidth": 930,
+            "actualBudgetPx": 930,
+            "limit": "legacy",
+            "requestedTargetPx": null,
+            "requestedTargetMet": null,
+            "hardFloorPx": 6,
+            "hardFloorMet": true,
+            "minimumOwner": {
+              "kind": "node",
+              "id": "app_rx"
+            },
+            "minimumSourceTextPx": 8,
+            "minimumProjectedTextPx": 6,
+            "semanticTextCount": 11
+          },
+          "issues": []
+        },
+        "provenance": "current",
+        "deliveryReceiptId": "d01f4150-c80c-409a-9711-6ac83c6a01ed"
+      }
+    },
+    "browser-check": {
+      "status": "fail",
+      "exitCode": 1,
+      "durationMs": 96,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "D:\\ProgramData\\AI_Agent\\Support_Skill\\Archify\\archify\\bin\\archify.mjs",
+        "browser-check",
+        "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+        "--json",
+        "--require-provenance",
+        "--out-dir",
+        "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow"
+      ],
+      "execution": "in-process",
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": false,
+        "command": "browser-check",
+        "evidenceKind": "automated-browser",
+        "status": "fail",
+        "visualReview": "not-requested",
+        "provenance": "current",
+        "deliveryReceiptId": "d01f4150-c80c-409a-9711-6ac83c6a01ed",
+        "artifact": {
+          "path": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+          "sha256": "0622344553cb11785742e384f90679978793a6d4970e5f580f6ca7baf383088b",
+          "bytes": 754096
+        },
+        "state": {
+          "detail": "read",
+          "motion": "still"
+        },
+        "chrome": {
+          "status": "not-checked",
+          "executable": null
+        },
+        "diagnostics": [
+          {
+            "code": "viewer/evidence-path-conflict",
+            "severity": "error",
+            "message": "browser-check will not replace the existing unowned evidence path \"C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\adb1_ota-code-program-flow.browser-check.json\".",
+            "subject": {
+              "artifact": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+              "evidencePath": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\adb1_ota-code-program-flow.browser-check.json"
+            },
+            "evidence": {
+              "reason": {
+                "code": "ownership-artifact-mismatch"
+              }
+            },
+            "supportedFixes": [
+              "move the conflicting file aside, or choose a separate --out-dir, then rerun browser-check"
+            ]
+          }
+        ],
+        "containment": {
+          "status": "fail",
+          "policy": "fit-or-reader-declared-readable-vertical-scroll",
+          "viewports": []
+        },
+        "themeStates": {
+          "status": "fail",
+          "viewports": []
+        },
+        "readability": {
+          "status": "fail",
+          "minimumProjectedNodeTextPx": 6,
+          "viewports": []
+        },
+        "viewerChrome": {
+          "status": "fail",
+          "viewports": []
+        },
+        "captures": {
+          "status": "not-requested",
+          "screenshots": [],
+          "contactSheet": null
+        },
+        "sidecars": {
+          "receipt": "adb1_ota-code-program-flow.browser-check.json",
+          "files": []
+        },
+        "error": "browser-check will not replace the existing unowned evidence path \"C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\adb1_ota-code-program-flow.browser-check.json\"."
+      }
+    }
+  },
+  "diagnostics": [
+    {
+      "code": "viewer/evidence-path-conflict",
+      "severity": "error",
+      "message": "browser-check will not replace the existing unowned evidence path \"C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\adb1_ota-code-program-flow.browser-check.json\".",
+      "subject": {
+        "artifact": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+        "evidencePath": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\adb1_ota-code-program-flow.browser-check.json"
+      },
+      "evidence": {
+        "reason": {
+          "code": "ownership-artifact-mismatch"
+        }
+      },
+      "supportedFixes": [
+        "move the conflicting file aside, or choose a separate --out-dir, then rerun browser-check"
+      ]
+    }
+  ],
+  "evidence": {
+    "receipt": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\adb1_ota-code-program-flow.finalize.json",
+    "summaryReceipt": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\adb1_ota-code-program-flow.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\adb1_ota-code-program-flow.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "failedStage": "browser-check",
+  "finishedAt": "2026-10-06T10:43:10.191Z",
+  "durationMs": 3915,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.0.1",
+    "availableVersion": "3.0.1",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-06T05:40:51.405Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "schema_version": 2,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "ADB1 OTA 状态生命周期",
+    "subtitle": "Flash 元数据位清除状态机、Bootloader 准入与 APP 试运行确认",
+    "locale": "zh-CN",
+    "output": "ADB1_OTA-state-lifecycle.html",
+    "animation": "trace",
+    "visual_preset": "editorial",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://gitcode.com/Orange-341024489/BK7258_AI_Voice_Assistant.git",
+      "link_mode": "local-only",
+      "revision": "848dbfa74b15c13ca8e0ec8faa57a9877910c8f0"
+    },
+    "viewBox": [1240, 700],
+    "views": [
+      {
+        "id": "happy_path",
+        "label": "成功升级路径",
+        "focus": ["current_app", "pending", "boot_ready", "downloading", "verifying", "verified", "trial_app", "confirmed"],
+        "note": "状态按 PENDING→DOWNLOADING→VERIFIED→CONFIRMED 单向清零，成功路径跨两次复位。"
+      },
+      {
+        "id": "power_loss",
+        "label": "掉电恢复路径",
+        "focus": ["pending", "downloading", "interrupted", "boot_ready"],
+        "note": "PENDING/DOWNLOADING 均不具备跳转资格，重新上电仍停在 Bootloader 等待模组重发。"
+      },
+      {
+        "id": "validation_failure",
+        "label": "校验失败路径",
+        "focus": ["verifying", "invalid_image"],
+        "note": "长度、CRC32 或向量表任一失败，都不会写 VERIFIED，也不会跳转 APP。"
+      },
+      {
+        "id": "trial_confirm",
+        "label": "试运行确认",
+        "focus": ["verified", "trial_app", "confirmed"],
+        "note": "VERIFIED APP 启动后三灯闪烁；连续运行 5 秒后 APP 自行写 CONFIRMED。"
+      }
+    ]
+  },
+  "lanes": [
+    {"id": "main", "label": "升级传输与校验"},
+    {"id": "activation", "label": "激活与 APP 确认"},
+    {"id": "recovery", "label": "失败 / 掉电恢复"}
+  ],
+  "states": [
+    {
+      "id": "current_app",
+      "type": "start",
+      "label": "当前 APP 运行",
+      "sublabel": "固件正常服务",
+      "tag": "通常为 CONFIRMED",
+      "step": "01",
+      "lane": "main",
+      "col": 0,
+      "width": 140,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 330, "end_line": 334, "label": "CONFIRMED 准入"},
+        {"path": "ADB1_OTA/Project/main.c", "line": 421, "end_line": 449, "label": "APP 主循环"}
+      ]
+    },
+    {
+      "id": "pending",
+      "type": "active",
+      "label": "PENDING",
+      "sublabel": "已写元数据，等复位",
+      "tag": "0xFFFFFFFE",
+      "step": "02",
+      "lane": "main",
+      "col": 1,
+      "width": 130,
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 37, "end_line": 54, "label": "写 PENDING"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/inclue/ota_layout.h", "line": 16, "end_line": 19, "label": "状态常量"}
+      ]
+    },
+    {
+      "id": "boot_ready",
+      "type": "waiting",
+      "label": "Bootloader Ready",
+      "sublabel": "驻留并报 BOOT_READY",
+      "tag": "不跳转 APP",
+      "step": "03",
+      "lane": "main",
+      "col": 2,
+      "width": 140,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 203, "end_line": 212, "label": "BOOT_READY"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 322, "end_line": 347, "label": "启动判定与驻留"}
+      ]
+    },
+    {
+      "id": "downloading",
+      "type": "active",
+      "label": "DOWNLOADING",
+      "sublabel": "擦 APP，顺序收分片",
+      "tag": "0xFFFFFFFC",
+      "step": "04",
+      "lane": "main",
+      "col": 3,
+      "width": 140,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 135, "end_line": 172, "label": "擦除与写入"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 235, "end_line": 253, "label": "DATA/ACK"}
+      ]
+    },
+    {
+      "id": "verifying",
+      "type": "decision",
+      "label": "VERIFYING",
+      "sublabel": "总长 / CRC / 向量",
+      "tag": "FINISH",
+      "step": "05",
+      "lane": "main",
+      "col": 4,
+      "width": 145,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 174, "end_line": 180, "label": "向量校验"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 256, "end_line": 268, "label": "FINISH 校验"}
+      ]
+    },
+    {
+      "id": "verified",
+      "type": "success",
+      "label": "VERIFIED",
+      "sublabel": "镜像可信可跳转",
+      "tag": "0xFFFFFFF8",
+      "step": "06",
+      "lane": "activation",
+      "col": 4,
+      "width": 140,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 256, "end_line": 268, "label": "提交 VERIFIED"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 330, "end_line": 334, "label": "启动准入"}
+      ]
+    },
+    {
+      "id": "trial_app",
+      "type": "active",
+      "label": "APP 试运行",
+      "sublabel": "三灯闪烁，观察 5 秒",
+      "tag": "metadata 仍为 VERIFIED",
+      "step": "07",
+      "lane": "activation",
+      "col": 3,
+      "width": 140,
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 88, "end_line": 98, "label": "检测 VERIFIED"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 113, "end_line": 120, "label": "试运行计时与灯效"}
+      ]
+    },
+    {
+      "id": "confirmed",
+      "type": "success",
+      "label": "CONFIRMED",
+      "sublabel": "APP 稳定运行并自确认",
+      "tag": "0xFFFFFFF0",
+      "step": "08",
+      "lane": "activation",
+      "col": 2,
+      "width": 140,
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 56, "end_line": 62, "label": "写 CONFIRMED"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 113, "end_line": 120, "label": "5 秒确认"}
+      ]
+    },
+    {
+      "id": "prepare_rejected",
+      "type": "failure",
+      "label": "准备请求被拒绝",
+      "sublabel": "参数或元数据写失败",
+      "tag": "APP 不复位",
+      "lane": "recovery",
+      "col": 1,
+      "width": 145,
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 64, "end_line": 85, "label": "PREPARE 失败响应"}
+      ]
+    },
+    {
+      "id": "interrupted",
+      "type": "waiting",
+      "label": "传输中断 / 掉电",
+      "sublabel": "PENDING/DL 不启动",
+      "tag": "单槽位 APP 可能不完整",
+      "lane": "recovery",
+      "col": 2,
+      "width": 145,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 330, "end_line": 347, "label": "非可信状态驻留"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/inclue/ota_layout.h", "line": 16, "end_line": 19, "label": "状态值"}
+      ]
+    },
+    {
+      "id": "invalid_image",
+      "type": "failure",
+      "label": "镜像校验失败",
+      "sublabel": "总长 / CRC / 向量失败",
+      "tag": "不写 VERIFIED",
+      "lane": "recovery",
+      "col": 4,
+      "width": 150,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 174, "end_line": 180, "label": "向量条件"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 256, "end_line": 264, "label": "失败响应"}
+      ]
+    }
+  ],
+  "transitions": [
+    {"id": "t_current_pending", "from": "current_app", "to": "pending", "label": "PREPARE 合法并写元数据", "variant": "emphasis", "labelDy": -31},
+    {"id": "t_pending_boot", "from": "pending", "to": "boot_ready", "label": "500 ms 后系统复位", "variant": "emphasis", "labelDy": -31},
+    {"id": "t_boot_downloading", "from": "boot_ready", "to": "downloading", "label": "首个 offset=0 DATA；擦除 APP", "variant": "emphasis", "labelDy": -31},
+    {"id": "t_downloading_verify", "from": "downloading", "to": "verifying", "label": "收到 FINISH", "variant": "security", "labelDy": -31},
+    {"id": "t_verify_verified", "from": "verifying", "to": "verified", "label": "所有门禁通过", "variant": "security"},
+    {"id": "t_verified_trial", "from": "verified", "to": "trial_app", "label": "复位；Boot 安全跳转", "variant": "emphasis", "labelDy": -31},
+    {"id": "t_trial_confirmed", "from": "trial_app", "to": "confirmed", "variant": "emphasis"},
+    {"id": "t_prepare_reject", "from": "pending", "to": "prepare_rejected", "label": "写入前参数/Flash 失败", "variant": "security", "route": "drop"},
+    {"id": "t_download_interrupt", "from": "downloading", "to": "interrupted", "label": "掉电 / 复位 / 超时", "variant": "security"},
+    {"id": "t_verify_invalid", "from": "verifying", "to": "invalid_image", "variant": "security", "route": "right-channel"}
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Flash 友好的单向状态",
+      "items": [
+        "PENDING FFFFFFFE → DOWNLOADING FFFFFFFC",
+        "VERIFIED FFFFFFF8 → CONFIRMED FFFFFFF0",
+        "每次迁移只把更多位从 1 编程为 0，无需为状态更新再次擦页"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Bootloader 启动准入",
+      "items": [
+        "只有 metadata.magic 正确且 state 为 VERIFIED/CONFIRMED 才考虑跳转",
+        "跳转前再次检查 MSP 和 ResetHandler 范围及 Thumb 位",
+        "其余状态统一驻留 Bootloader，避免执行半写镜像"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "试运行确认语义",
+      "items": [
+        "VERIFIED 不是回滚槽，而是允许启动的新镜像状态",
+        "APP 启动后通过灯效暴露 5 秒确认窗口",
+        "达到 5 秒即写 CONFIRMED；窗口内复位会再次从 VERIFIED 试运行"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "已知限制",
+      "items": [
+        "STM32F103C8 64 KB Flash 只容纳 Boot + 单 APP + 元数据",
+        "旧 APP 在开始擦除后无法保留，因此没有自动回退到旧版本",
+        "失败恢复依赖 Bootloader 常驻和上游重新发送镜像"
+      ]
+    }
+  ]
+}

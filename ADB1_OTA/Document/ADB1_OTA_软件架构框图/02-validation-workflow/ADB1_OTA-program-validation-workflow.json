@@ -1,0 +1,298 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "ADB1 OTA 程序校验流程",
+    "subtitle": "从 PREPARE 到 VERIFIED/CONFIRMED：协议、边界、顺序、CRC32 与向量表逐级门禁",
+    "locale": "zh-CN",
+    "output": "ADB1_OTA-program-validation-workflow.html",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://gitcode.com/Orange-341024489/BK7258_AI_Voice_Assistant.git",
+      "link_mode": "local-only",
+      "revision": "848dbfa74b15c13ca8e0ec8faa57a9877910c8f0"
+    },
+    "viewBox": [1120, 700],
+    "views": [
+      {
+        "id": "prepare_checks",
+        "label": "准备阶段校验",
+        "focus": ["prepare_frame", "app_dispatch", "prepare_guard", "pending_meta"],
+        "note": "先通过帧 CRC16，再检查 12 字节载荷和 0 < size ≤ 47 KB，最后写 PENDING 元数据。"
+      },
+      {
+        "id": "chunk_checks",
+        "label": "分片写入校验",
+        "focus": ["boot_session", "data_frames", "flash_program"],
+        "note": "分片必须 ≤240 B、长度匹配、偏移连续且不越界；非末片必须偶数字节。"
+      },
+      {
+        "id": "finish_checks",
+        "label": "整镜像校验",
+        "focus": ["finish_frame", "finish_gate", "crc_vector_gate", "commit_state", "activate_app"],
+        "note": "接收总长、CRC32、MSP、ResetHandler 地址和 Thumb 位全部通过后才标记 VERIFIED。"
+      }
+    ]
+  },
+  "lanes": [
+    {"id": "protocol", "label": "升级模组 / 协议输入"},
+    {"id": "controller", "label": "APP 与 Bootloader 控制"},
+    {"id": "verification", "label": "Flash 与程序校验"}
+  ],
+  "phases": [
+    {"id": "prepare", "label": "准备与切换", "fromCol": 0, "toCol": 1},
+    {"id": "download", "label": "分片接收与写入", "fromCol": 2, "toCol": 3, "variant": "emphasis"},
+    {"id": "finish", "label": "最终校验与激活", "fromCol": 4, "toCol": 5, "variant": "security"}
+  ],
+  "groups": [
+    {"id": "frame_integrity", "label": "帧级完整性", "lane": "protocol", "fromCol": 0, "toCol": 4, "variant": "dashed"},
+    {"id": "image_integrity", "label": "镜像级完整性", "lane": "verification", "fromCol": 3, "toCol": 5, "variant": "security"}
+  ],
+  "mainPath": [
+    "prepare_frame",
+    "app_dispatch",
+    "prepare_guard",
+    "pending_meta",
+    "boot_session",
+    "data_frames",
+    "flash_program",
+    "finish_frame",
+    "finish_gate",
+    "crc_vector_gate",
+    "commit_state",
+    "activate_app"
+  ],
+  "semanticChecks": {
+    "allowedRoots": ["prepare_frame"],
+    "allowedTerminals": ["activate_app"],
+    "requiredPaths": [
+      {"from": "prepare_frame", "to": "activate_app"}
+    ]
+  },
+  "nodes": [
+    {
+      "id": "prepare_frame",
+      "lane": "protocol",
+      "col": 0,
+      "type": "external",
+      "label": "PREPARE 帧",
+      "sublabel": "size + CRC32 + version",
+      "tag": "cmd 0x0D00",
+      "width": 125,
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/WIFI/inclue/ad_sdk.h", "line": 170, "end_line": 177, "label": "命令字"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 64, "end_line": 74, "label": "PREPARE 载荷"}
+      ]
+    },
+    {
+      "id": "app_dispatch",
+      "lane": "controller",
+      "col": 0,
+      "type": "messagebus",
+      "label": "APP 协议接收",
+      "sublabel": "帧结构与 CRC16",
+      "tag": "错误帧丢弃",
+      "width": 130,
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/Usart/src/usart_transport.c", "line": 100, "end_line": 160, "label": "UART 批量交付"},
+        {"path": "ADB1_OTA/Project/Cold/WIFI/src/ad_sdk.c", "line": 877, "end_line": 976, "label": "协议解析"},
+        {"path": "ADB1_OTA/Project/Cold/WIFI/src/ad_sdk.c", "line": 683, "end_line": 693, "label": "OTA 分派"}
+      ]
+    },
+    {
+      "id": "prepare_guard",
+      "lane": "controller",
+      "col": 1,
+      "type": "security",
+      "label": "PREPARE 门禁",
+      "sublabel": "≥12B；size ≤47KB",
+      "tag": "长度 / 范围",
+      "width": 130,
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 64, "end_line": 74, "label": "参数检查"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/inclue/ota_layout.h", "line": 8, "end_line": 11, "label": "容量上限"}
+      ]
+    },
+    {
+      "id": "pending_meta",
+      "lane": "verification",
+      "col": 1,
+      "type": "database",
+      "label": "写 PENDING 元数据",
+      "sublabel": "擦页并写 8 字",
+      "tag": "state=FFFFFFFE",
+      "width": 135,
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 31, "end_line": 54, "label": "Flash 写元数据"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/inclue/ota_layout.h", "line": 14, "end_line": 29, "label": "元数据格式"}
+      ]
+    },
+    {
+      "id": "boot_session",
+      "lane": "controller",
+      "col": 2,
+      "type": "backend",
+      "label": "Bootloader 会话",
+      "sublabel": "非可信状态驻留",
+      "tag": "每秒 BOOT_READY",
+      "width": 135,
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 75, "end_line": 85, "label": "响应与复位计划"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 101, "end_line": 111, "label": "500ms 复位"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 322, "end_line": 347, "label": "Boot 驻留条件"}
+      ]
+    },
+    {
+      "id": "data_frames",
+      "lane": "protocol",
+      "col": 2,
+      "type": "external",
+      "label": "DATA 分片流",
+      "sublabel": "offset + data_len + bytes",
+      "tag": "cmd 0x0D03 · ≤240 B",
+      "width": 125,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 235, "end_line": 253, "label": "DATA 处理"}
+      ]
+    },
+    {
+      "id": "flash_program",
+      "lane": "controller",
+      "col": 3,
+      "type": "backend",
+      "label": "分片门禁并写 APP",
+      "sublabel": "长度/偏移/边界→写+CRC+ACK",
+      "tag": "state=FFFFFFFC",
+      "width": 145,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 135, "end_line": 172, "label": "擦写与 CRC 累积"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 69, "end_line": 77, "label": "CRC32 更新"}
+      ]
+    },
+    {
+      "id": "finish_frame",
+      "lane": "protocol",
+      "col": 4,
+      "type": "external",
+      "label": "FINISH 帧",
+      "sublabel": "声明传输结束",
+      "tag": "cmd 0x0D05",
+      "width": 120,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 13, "end_line": 20, "label": "FINISH 命令"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 256, "end_line": 269, "label": "FINISH 处理"}
+      ]
+    },
+    {
+      "id": "finish_gate",
+      "lane": "controller",
+      "col": 4,
+      "type": "security",
+      "label": "接收总长门禁",
+      "sublabel": "received == image_size",
+      "tag": "否则 RET_LENGTH",
+      "width": 140,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 256, "end_line": 260, "label": "总长检查"}
+      ]
+    },
+    {
+      "id": "crc_vector_gate",
+      "lane": "verification",
+      "col": 4,
+      "type": "security",
+      "label": "CRC32 + 向量门禁",
+      "sublabel": "CRC / MSP / Reset / Thumb",
+      "tag": "否则 RET_CHECKSUM",
+      "width": 145,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 174, "end_line": 180, "label": "向量检查"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 256, "end_line": 263, "label": "CRC32/向量门禁"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/inclue/ota_layout.h", "line": 8, "end_line": 13, "label": "APP/SRAM 边界"}
+      ]
+    },
+    {
+      "id": "commit_state",
+      "lane": "verification",
+      "col": 5,
+      "type": "database",
+      "label": "提交可信状态",
+      "sublabel": "VERIFIED → CONFIRMED",
+      "tag": "FFFFFFF8 → FFFFFFF0",
+      "width": 135,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 102, "end_line": 108, "label": "写状态"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 256, "end_line": 268, "label": "置 VERIFIED"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 88, "end_line": 120, "label": "5 秒后 CONFIRMED"}
+      ]
+    },
+    {
+      "id": "activate_app",
+      "lane": "controller",
+      "col": 5,
+      "type": "backend",
+      "label": "安全跳转 APP",
+      "sublabel": "VTOR / MSP / ResetHandler",
+      "tag": "校验成功",
+      "width": 140,
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 182, "end_line": 201, "label": "跳转序列"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 330, "end_line": 334, "label": "启动准入"},
+        {"path": "ADB1_OTA/Project/main.c", "line": 253, "end_line": 259, "label": "APP VTOR"}
+      ]
+    }
+  ],
+  "edges": [
+    {"id": "e_prepare_rx", "from": "prepare_frame", "to": "app_dispatch", "label": "UART1", "variant": "emphasis", "role": "main"},
+    {"id": "e_dispatch_guard", "from": "app_dispatch", "to": "prepare_guard", "label": "CRC16 合法", "variant": "emphasis", "role": "main"},
+    {"id": "e_prepare_meta", "from": "prepare_guard", "to": "pending_meta", "label": "参数合法", "variant": "security", "role": "main"},
+    {"id": "e_meta_boot", "from": "pending_meta", "to": "boot_session", "label": "响应成功 + 500ms 复位", "variant": "emphasis", "role": "main"},
+    {"id": "e_boot_data", "from": "boot_session", "to": "data_frames", "label": "BOOT_READY 后发送", "variant": "emphasis", "role": "main"},
+    {"id": "e_guard_write", "from": "data_frames", "to": "flash_program", "label": "帧 CRC16 合法；DATA_ACK 返回 next offset", "variant": "security", "role": "main"},
+    {"id": "e_flash_finish", "from": "flash_program", "to": "finish_frame", "label": "最后分片 ACK 后发送 FINISH", "variant": "emphasis", "role": "main"},
+    {"id": "e_finish_total", "from": "finish_frame", "to": "finish_gate", "label": "FINISH", "variant": "security", "role": "main"},
+    {"id": "e_total_crc", "from": "finish_gate", "to": "crc_vector_gate", "label": "总长度一致", "variant": "security", "role": "main"},
+    {"id": "e_crc_commit", "from": "crc_vector_gate", "to": "commit_state", "label": "CRC32 + 向量均通过", "variant": "security", "role": "main"},
+    {"id": "e_commit_activate", "from": "commit_state", "to": "activate_app", "label": "VERIFIED 后复位", "variant": "emphasis", "role": "main"}
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "第一层：协议帧",
+      "items": [
+        "固定帧头 0xDA28 与协议版本 0x01",
+        "payload_len 不得超过协议上限，完整帧长度必须满足",
+        "CRC16-CCITT 覆盖头部、命令、长度和载荷"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "第二层：Flash 分片",
+      "items": [
+        "每片最大 240 字节，声明长度必须与实际载荷一致",
+        "offset 必须等于 received_bytes，禁止乱序或覆盖",
+        "写入不得超过声明镜像大小与 47 KB APP 边界"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "第三层：整镜像",
+      "items": [
+        "received_bytes 必须等于 metadata.image_size",
+        "running_crc 最终异或后必须等于 metadata.image_crc32",
+        "向量表必须指向合法 SRAM 栈和带 Thumb 位的 APP 复位入口"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "失败语义",
+      "items": [
+        "参数、长度、CRC 或 Flash 操作失败都不会提交 VERIFIED",
+        "Bootloader 继续运行并周期上报 BOOT_READY",
+        "单槽位方案没有旧镜像回滚；恢复方式是重新下发完整镜像"
+      ]
+    }
+  ]
+}

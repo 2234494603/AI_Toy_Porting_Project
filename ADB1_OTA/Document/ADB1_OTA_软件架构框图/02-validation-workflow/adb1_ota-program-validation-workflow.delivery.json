@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "952ff954-dbee-4344-86df-e1648bd4da10",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\02-validation-workflow\\ADB1_OTA-program-validation-workflow.json",
+  "output": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\02-validation-workflow\\ADB1_OTA-program-validation-workflow.html",
+  "specification": {
+    "sha256": "460ec783f4ca63a5151a4dc663bb4536540bdfdd370104793818731a449b8d80",
+    "bytes": 12056
+  },
+  "artifact": {
+    "sha256": "74c8cb0c7ece15b91d73c83648c8c814a7c0b3fae69d5e3fff502807d8fa5fcc",
+    "bytes": 775637
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "054aa2b0-1482-4337-92a4-fc41a2f1cea4",
+  "status": "current",
+  "command": "deliver",
+  "type": "lifecycle",
+  "input": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\03-ota-lifecycle\\ADB1_OTA-state-lifecycle.json",
+  "output": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\03-ota-lifecycle\\ADB1_OTA-state-lifecycle.html",
+  "specification": {
+    "sha256": "a98cd592170662d2c5dacdf4b094e271b2be9ee439044eb326b87c2ad0820c4d",
+    "bytes": 10117
+  },
+  "artifact": {
+    "sha256": "0265ee70810062223311c21ffb404e874348ef910e2c6046b2d41f3b3f361274",
+    "bytes": 772867
+  }
+}

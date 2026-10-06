@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ADB1_OTA 固件代码架构",
+    "locale": "zh-CN",
+    "output": "ADB1_OTA-code-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://gitcode.com/Orange-341024489/BK7258_AI_Voice_Assistant.git",
+      "link_mode": "local-only",
+      "revision": "088515e0639e5b891629e62b2ea81a50d0b143d8"
+    },
+    "views": [
+      {
+        "id": "boot-loop",
+        "label": "启动与主循环",
+        "focus": ["main_loop", "timer_hal", "ad_sdk", "uart_transport"],
+        "note": "初始化外设与业务模块，随后在 10ms 主循环中处理串口、SDK、定时器和按键。"
+      },
+      {
+        "id": "online-mode",
+        "label": "在线模式控制",
+        "focus": ["app_ctrl", "app_modes", "app_ai", "app_player", "ad_sdk"],
+        "note": "网络状态驱动控制状态机，模式管理器协调 AI 与播放器会话。"
+      },
+      {
+        "id": "iot-path",
+        "label": "IoT 数据点链路",
+        "focus": ["external_module", "uart_transport", "ad_sdk", "app_iot", "board_io"],
+        "note": "模组上报经协议 SDK 分派到 IoT 业务，业务更新 LED、音量和模式并回报状态。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user_input",
+      "type": "external",
+      "label": "用户操作",
+      "sublabel": "KEY1 / KEY2 / KEY3",
+      "pos": [40, 300],
+      "size": [150, 66],
+      "sources": [
+        {"path": "ADB1_OTA/Project/main.c", "line": 104, "end_line": 143, "label": "按键动作"},
+        {"path": "ADB1_OTA/Project/main.c", "line": 151, "end_line": 238, "label": "按键扫描"}
+      ]
+    },
+    {
+      "id": "board_io",
+      "type": "external",
+      "label": "板载 GPIO",
+      "sublabel": "按键输入 · 三路 LED",
+      "pos": [250, 500],
+      "size": [170, 70],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/GPIO/src/gpio.c", "line": 42, "end_line": 76, "label": "GPIO 配置"},
+        {"path": "ADB1_OTA/Project/Cold/IOT/src/app_iot.c", "line": 368, "end_line": 390, "label": "LED 输出"}
+      ]
+    },
+    {
+      "id": "main_loop",
+      "type": "backend",
+      "label": "main 启动与主循环",
+      "sublabel": "初始化 · 10ms 协作式轮询",
+      "tag": "调度入口",
+      "pos": [250, 300],
+      "size": [190, 76],
+      "sources": [
+        {"path": "ADB1_OTA/Project/main.c", "line": 253, "end_line": 279, "label": "外设启动"},
+        {"path": "ADB1_OTA/Project/main.c", "line": 321, "end_line": 409, "label": "模块初始化"},
+        {"path": "ADB1_OTA/Project/main.c", "line": 413, "end_line": 435, "label": "主循环"}
+      ]
+    },
+    {
+      "id": "app_ctrl",
+      "type": "backend",
+      "label": "应用控制状态机",
+      "sublabel": "配网 · 离线 · 在线 · 唤醒",
+      "pos": [500, 70],
+      "size": [190, 72],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/Control/src/app_ctrl.c", "line": 109, "end_line": 231, "label": "状态迁移"},
+        {"path": "ADB1_OTA/Project/Cold/Control/src/app_ctrl.c", "line": 244, "end_line": 310, "label": "回调与状态"}
+      ]
+    },
+    {
+      "id": "app_modes",
+      "type": "backend",
+      "label": "在线模式管理",
+      "sublabel": "AI / Player 互斥切换",
+      "pos": [500, 245],
+      "size": [190, 72],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/Mode/src/app_modes.c", "line": 70, "end_line": 116, "label": "进入与退出模式"},
+        {"path": "ADB1_OTA/Project/Cold/Mode/src/app_modes.c", "line": 171, "end_line": 220, "label": "音效后切换"}
+      ]
+    },
+    {
+      "id": "app_iot",
+      "type": "backend",
+      "label": "IoT 业务处理",
+      "sublabel": "数据点 · 命令 · 本地状态",
+      "pos": [500, 420],
+      "size": [190, 72],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/IOT/src/app_iot.c", "line": 360, "end_line": 455, "label": "数据点处理"},
+        {"path": "ADB1_OTA/Project/Cold/IOT/src/app_iot.c", "line": 810, "end_line": 843, "label": "注册业务回调"},
+        {"path": "ADB1_OTA/Project/Cold/IOT/src/app_iot.c", "line": 877, "end_line": 899, "label": "状态上报"}
+      ]
+    },
+    {
+      "id": "app_ai",
+      "type": "backend",
+      "label": "AI 会话适配",
+      "sublabel": "唤醒 · 监听 · 打断 · 状态",
+      "pos": [750, 70],
+      "size": [190, 72],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/AI/src/app_ai.c", "line": 27, "end_line": 75, "label": "AI 状态回调"},
+        {"path": "ADB1_OTA/Project/Cold/AI/src/app_ai.c", "line": 92, "end_line": 135, "label": "AI 控制"}
+      ]
+    },
+    {
+      "id": "app_player",
+      "type": "backend",
+      "label": "播放器适配",
+      "sublabel": "播放状态回调",
+      "pos": [750, 210],
+      "size": [190, 68],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/Player/src/app_player.c", "line": 25, "end_line": 70, "label": "播放状态与注册"}
+      ]
+    },
+    {
+      "id": "timer_hal",
+      "type": "backend",
+      "label": "HAL 与软件定时器",
+      "sublabel": "SysTick · GPIO · UART",
+      "pos": [750, 500],
+      "size": [190, 70],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/Time/src/soft_timer.c", "line": 164, "end_line": 194, "label": "定时器调度"},
+        {"path": "ADB1_OTA/Project/Cold/Usart/src/usart.c", "line": 32, "end_line": 79, "label": "UART 配置"}
+      ]
+    },
+    {
+      "id": "ad_sdk",
+      "type": "messagebus",
+      "label": "AD 协议 SDK",
+      "sublabel": "DA28 帧 · CRC16 · 回调分派",
+      "tag": "协议核心",
+      "pos": [880, 290],
+      "size": [200, 78],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/WIFI/src/ad_sdk.c", "line": 202, "end_line": 237, "label": "协议发送"},
+        {"path": "ADB1_OTA/Project/Cold/WIFI/src/ad_sdk.c", "line": 868, "end_line": 968, "label": "协议接收解析"},
+        {"path": "ADB1_OTA/Project/Cold/WIFI/src/ad_sdk.c", "line": 984, "end_line": 1017, "label": "回调注册"}
+      ]
+    },
+    {
+      "id": "uart_transport",
+      "type": "messagebus",
+      "label": "USART 传输适配",
+      "sublabel": "UART1 协议 · UART2 日志",
+      "pos": [1190, 290],
+      "size": [200, 78],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/Usart/src/usart_transport.c", "line": 45, "end_line": 100, "label": "UART1 收发"},
+        {"path": "ADB1_OTA/Project/Cold/Usart/src/usart_transport.c", "line": 90, "end_line": 145, "label": "接收缓冲处理"},
+        {"path": "ADB1_OTA/Project/Cold/Usart/src/usart_transport.c", "line": 147, "end_line": 150, "label": "UART2 日志"}
+      ]
+    },
+    {
+      "id": "external_module",
+      "type": "external",
+      "label": "外部 AI / Wi‑Fi 模组",
+      "sublabel": "联网 · 云端 · 音频能力",
+      "pos": [1525, 290],
+      "size": [200, 78],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/WIFI/src/ad_sdk.c", "line": 293, "end_line": 334, "label": "模组握手"},
+        {"path": "ADB1_OTA/Project/Cold/WIFI/inclue/ad_sdk.h", "line": 199, "end_line": 220, "label": "模组与 AI 状态"}
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "STM32F103 固件",
+      "wraps": ["main_loop", "app_ctrl", "app_modes", "app_iot", "app_ai", "app_player", "timer_hal", "ad_sdk", "uart_transport"],
+      "pad": 24
+    }
+  ],
+  "connections": [
+    {"id": "key-action", "from": "user_input", "to": "main_loop", "label": "单击 / 双击", "variant": "emphasis"},
+    {"id": "gpio-scan", "from": "board_io", "to": "main_loop", "label": "GPIO 按键状态", "fromSide": "top", "toSide": "bottom"},
+    {"id": "main-modes", "from": "main_loop", "to": "app_modes", "label": "按键触发模式 / AI", "fromSide": "right", "toSide": "left"},
+    {"id": "main-sdk", "from": "main_loop", "to": "ad_sdk", "label": "初始化 + 主循环", "variant": "emphasis"},
+    {"id": "main-iot", "from": "main_loop", "to": "app_iot", "label": "初始化 / 音量同步", "fromSide": "bottom", "toSide": "left"},
+    {"id": "main-timer", "from": "main_loop", "to": "timer_hal", "label": "定时处理", "fromSide": "bottom", "toSide": "left"},
+    {"id": "ctrl-mode", "from": "app_ctrl", "to": "app_modes", "label": "联网后进入 AI", "fromSide": "bottom", "toSide": "top"},
+    {"id": "mode-ai", "from": "app_modes", "to": "app_ai", "label": "AI 会话", "fromSide": "top", "toSide": "left"},
+    {"id": "mode-player", "from": "app_modes", "to": "app_player", "label": "播放器会话", "fromSide": "right", "toSide": "left"},
+    {"id": "ai-state", "from": "app_ai", "to": "app_ctrl", "label": "活跃 / 空闲回调", "variant": "dashed", "fromSide": "left", "toSide": "right"},
+    {"id": "player-state", "from": "app_player", "to": "app_ctrl", "label": "播放状态回调", "variant": "dashed", "fromSide": "top", "toSide": "right"},
+    {"id": "iot-mode", "from": "app_iot", "to": "app_modes", "label": "数据点切换模式", "fromSide": "top", "toSide": "bottom"},
+    {"id": "iot-gpio", "from": "app_iot", "to": "board_io", "label": "LED 输出", "fromSide": "left", "toSide": "right"},
+    {"id": "ctrl-sdk", "from": "app_ctrl", "to": "ad_sdk", "label": "配网 / 联网"},
+    {"id": "mode-sdk", "from": "app_modes", "to": "ad_sdk", "label": "音效 · AI · 播放器命令", "fromSide": "right", "toSide": "left"},
+    {"id": "iot-sdk", "from": "app_iot", "to": "ad_sdk", "label": "注册回调 / 数据点上报", "fromSide": "right", "toSide": "bottom"},
+    {"id": "sdk-callbacks", "from": "ad_sdk", "to": "app_iot", "label": "数据点 / 命令回调", "variant": "dashed", "fromSide": "bottom", "toSide": "right"},
+    {"id": "sdk-uart", "from": "ad_sdk", "to": "uart_transport", "label": "编码帧 / 解码数据", "variant": "emphasis"},
+    {"id": "uart-module", "from": "uart_transport", "to": "external_module", "label": "USART1 115200 双向通信", "variant": "emphasis"},
+    {"id": "sdk-time", "from": "ad_sdk", "to": "timer_hal", "label": "读取系统 tick", "fromSide": "bottom", "toSide": "right"}
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "执行模型",
+      "items": [
+        "无 RTOS：main 以约 10ms 周期协作式轮询",
+        "UART1 中断逐字节接收，空闲超时后批量交给协议解析",
+        "软件定时器回调由主循环统一驱动"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "控制与业务",
+      "items": [
+        "app_ctrl 根据模组联网状态维护配网、离线、在线与唤醒状态",
+        "app_modes 在 AI 与 Player 间切换，并先播放模式提示音",
+        "app_iot 处理云端/AI 数据点与命令，驱动 LED、音量和模式"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "分析范围",
+      "items": [
+        "依据当前 ADB1_OTA/Project 工作区源码生成",
+        "工作区存在未提交改动，提交号仅用于仓库身份，不代表纯净快照",
+        "STM32Cube HAL/CMSIS 作为平台依赖汇总展示，未展开库内部实现"
+      ]
+    }
+  ]
+}

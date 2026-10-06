@@ -1,0 +1,29 @@
+./objects/stm32f1xx_hal_gpio_ex.o: \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_gpio_ex.c \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h \
+  ..\..\Project\Cold\Driver\inclue\stm32f1xx_hal_conf.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_def.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f1xx.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\CMSIS\Device\ST\STM32F1xx\Include\stm32f103xb.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\CMSIS\Include\core_cm3.h \
+  D:\ProgramData\Keil\Core\ARM\ARMCLANG\Bin\..\include\stdint.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\CMSIS\Include\cmsis_version.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\CMSIS\Include\cmsis_compiler.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\CMSIS\Include\cmsis_armclang.h \
+  D:\ProgramData\Keil\Core\ARM\ARMCLANG\Bin\..\include\arm_compat.h \
+  D:\ProgramData\Keil\Core\ARM\ARMCLANG\Bin\..\include\arm_acle.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\CMSIS\Device\ST\STM32F1xx\Include\system_stm32f1xx.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h \
+  D:\ProgramData\Keil\Core\ARM\ARMCLANG\Bin\..\include\stddef.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc_ex.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_gpio_ex.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_exti.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_dma_ex.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_cortex.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h \
+  ..\..\Project\Cold\CMISS\STM32Cube_FW_F1_V1.8.0\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h

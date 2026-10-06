@@ -1,2 +1,0 @@
-AccessKeyId: AKLTNTdiNTE5OTkwMjQzNDc4MGJlNmNjZGIzYzNiOGFjNTI
-SecretAccessKey: TnpGaE1EaGhZak5rWW1aak5EQXpNRGhqTnpGa1pqYzJaVGd6TWpkalpHRQ==

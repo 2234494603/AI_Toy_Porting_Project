@@ -1,0 +1,296 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ADB1 OTA 程序与校验架构",
+    "subtitle": "STM32F103 单分区 OTA：应用发起、Bootloader 接收、双层完整性校验与试运行确认",
+    "locale": "zh-CN",
+    "output": "ADB1_OTA-system-architecture.html",
+    "animation": "trace",
+    "visual_preset": "blueprint",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://gitcode.com/Orange-341024489/BK7258_AI_Voice_Assistant.git",
+      "link_mode": "local-only",
+      "revision": "848dbfa74b15c13ca8e0ec8faa57a9877910c8f0"
+    },
+    "viewBox": [1240, 1100],
+    "views": [
+      {
+        "id": "prepare_path",
+        "label": "APP 发起升级",
+        "focus": ["update_module", "uart_stack", "sdk_protocol", "app_ota", "metadata"],
+        "note": "应用只接收 PREPARE，校验镜像大小并写 PENDING 元数据，响应后延时复位。"
+      },
+      {
+        "id": "download_path",
+        "label": "Boot 下载写入",
+        "focus": ["update_module", "boot_protocol", "flash_writer", "app_image", "metadata"],
+        "note": "Bootloader 校验 DA28 帧 CRC16、分片长度与偏移，再按半字写入 APP 分区。"
+      },
+      {
+        "id": "verify_path",
+        "label": "最终程序校验",
+        "focus": ["integrity_gate", "app_image", "metadata", "boot_manager", "app_main"],
+        "note": "FINISH 阶段同时检查接收总长度、整镜像 CRC32、栈顶与复位向量，全部通过才置 VERIFIED。"
+      },
+      {
+        "id": "platform_path",
+        "label": "工程与底层依赖",
+        "focus": ["keil_targets", "hal_cmsis", "uart_stack", "gpio_feedback"],
+        "note": "Keil 的 Boot/APP 地址划分、STM32 HAL/CMSIS、UART 与 GPIO 共同支撑 OTA。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "update_module",
+      "type": "external",
+      "label": "AI / Wi-Fi 升级模组",
+      "sublabel": "提供镜像、CRC32、版本号与分片",
+      "pos": [30, 70],
+      "size": [190, 82],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/WIFI/inclue/ad_sdk.h", "line": 170, "end_line": 177, "label": "OTA 命令字"}
+      ]
+    },
+    {
+      "id": "uart_stack",
+      "type": "messagebus",
+      "label": "UART1 传输层",
+      "sublabel": "115200 · 中断接收 / Boot 轮询",
+      "tag": "PA9 / PA10",
+      "pos": [310, 70],
+      "size": [200, 82],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/Usart/src/usart.c", "line": 32, "end_line": 58, "label": "USART1 配置"},
+        {"path": "ADB1_OTA/Project/Cold/Usart/src/usart_transport.c", "line": 43, "end_line": 98, "label": "APP 收发"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 272, "end_line": 291, "label": "Boot 收帧"}
+      ]
+    },
+    {
+      "id": "sdk_protocol",
+      "type": "messagebus",
+      "label": "AD SDK 协议解析",
+      "sublabel": "DA28 · version 01 · CRC16-CCITT",
+      "tag": "APP 路径",
+      "pos": [600, 70],
+      "size": [220, 88],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/WIFI/src/ad_sdk.c", "line": 877, "end_line": 976, "label": "帧解析与 CRC16"},
+        {"path": "ADB1_OTA/Project/Cold/WIFI/src/ad_sdk.c", "line": 683, "end_line": 693, "label": "OTA 回调分派"},
+        {"path": "ADB1_OTA/Project/Cold/WIFI/src/ad_sdk.c", "line": 1029, "end_line": 1038, "label": "OTA 注册与发送"}
+      ]
+    },
+    {
+      "id": "app_ota",
+      "type": "backend",
+      "label": "APP OTA 协调器",
+      "sublabel": "PREPARE 校验 · 写 PENDING · 复位 · 确认",
+      "tag": "app_ota.c",
+      "pos": [930, 70],
+      "size": [230, 96],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 37, "end_line": 86, "label": "准备与元数据"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 88, "end_line": 120, "label": "启动确认与灯效"}
+      ]
+    },
+    {
+      "id": "app_main",
+      "type": "backend",
+      "label": "APP 主程序",
+      "sublabel": "VTOR=0x08004000 · 10ms 协作轮询",
+      "tag": "main.c",
+      "pos": [670, 500],
+      "size": [220, 92],
+      "sources": [
+        {"path": "ADB1_OTA/Project/main.c", "line": 253, "end_line": 282, "label": "向量与外设初始化"},
+        {"path": "ADB1_OTA/Project/main.c", "line": 323, "end_line": 388, "label": "SDK/OTA 初始化"},
+        {"path": "ADB1_OTA/Project/main.c", "line": 421, "end_line": 449, "label": "主循环"}
+      ]
+    },
+    {
+      "id": "business_modules",
+      "type": "backend",
+      "label": "业务模块",
+      "sublabel": "AI · Control · IoT · Mode · Player · Timer",
+      "pos": [30, 850],
+      "size": [230, 88],
+      "sources": [
+        {"path": "ADB1_OTA/Project/main.c", "line": 357, "end_line": 382, "label": "业务初始化"},
+        {"path": "ADB1_OTA/Project/Cold/IOT/src/app_iot.c", "line": 810, "end_line": 849, "label": "IoT 回调注册"}
+      ]
+    },
+    {
+      "id": "gpio_feedback",
+      "type": "frontend",
+      "label": "三路 LED 状态反馈",
+      "sublabel": "准备交替闪 · Boot 跑马灯 · 试运行全闪",
+      "tag": "PB6 / PB7 / PB8",
+      "pos": [990, 650],
+      "size": [230, 86],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 101, "end_line": 120, "label": "APP 灯效"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 293, "end_line": 300, "label": "Boot 跑马灯"},
+        {"path": "ADB1_OTA/Project/Cold/GPIO/src/gpio.c", "line": 42, "end_line": 76, "label": "GPIO 初始化"}
+      ]
+    },
+    {
+      "id": "metadata",
+      "type": "database",
+      "label": "OTA 元数据页",
+      "sublabel": "0x0800FC00 · 1 KB",
+      "tag": "magic/state/size/crc/version",
+      "pos": [990, 300],
+      "size": [230, 96],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/inclue/ota_layout.h", "line": 6, "end_line": 29, "label": "分区与状态定义"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 37, "end_line": 62, "label": "写 PENDING/CONFIRMED"}
+      ]
+    },
+    {
+      "id": "app_image",
+      "type": "database",
+      "label": "APP 镜像分区",
+      "sublabel": "0x08004000–0x0800FBFF · 47 KB",
+      "tag": "单槽位",
+      "pos": [30, 650],
+      "size": [230, 96],
+      "sources": [
+        {"path": "ADB1_OTA/Project/Cold/OTA/inclue/ota_layout.h", "line": 6, "end_line": 13, "label": "APP 地址范围"},
+        {"path": "ADB1_OTA/Keil/APP/STM32F103_AI.uvprojx", "line": 279, "end_line": 280, "label": "APP IROM1"}
+      ]
+    },
+    {
+      "id": "boot_protocol",
+      "type": "messagebus",
+      "label": "Boot 协议状态机",
+      "sublabel": "READY · DATA/ACK · FINISH/RESP",
+      "tag": "最大分片 240 B",
+      "pos": [340, 300],
+      "size": [230, 96],
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 7, "end_line": 27, "label": "协议常量"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 203, "end_line": 270, "label": "命令处理"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 272, "end_line": 291, "label": "收帧 CRC16"}
+      ]
+    },
+    {
+      "id": "boot_manager",
+      "type": "backend",
+      "label": "Boot 启动管理器",
+      "sublabel": "判断状态 · 等待升级 · 跳转 APP",
+      "tag": "bootloader_main.c",
+      "pos": [670, 300],
+      "size": [230, 96],
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 322, "end_line": 348, "label": "启动决策与循环"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 182, "end_line": 201, "label": "安全跳转 APP"}
+      ]
+    },
+    {
+      "id": "flash_writer",
+      "type": "backend",
+      "label": "Flash 擦写器",
+      "sublabel": "擦 47 页 · 半字编程 · 顺序偏移",
+      "tag": "HAL_FLASH",
+      "pos": [20, 300],
+      "size": [220, 96],
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 94, "end_line": 172, "label": "元数据/APP 擦写"}
+      ]
+    },
+    {
+      "id": "integrity_gate",
+      "type": "security",
+      "label": "完整性与可启动性门禁",
+      "sublabel": "总长度 · CRC32 · MSP · ResetHandler · Thumb",
+      "tag": "全部通过才 VERIFIED",
+      "pos": [390, 650],
+      "size": [240, 104],
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 69, "end_line": 77, "label": "CRC32 算法"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 174, "end_line": 180, "label": "向量校验"},
+        {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 256, "end_line": 268, "label": "FINISH 门禁"}
+      ]
+    },
+    {
+      "id": "keil_targets",
+      "type": "cloud",
+      "label": "Keil 双 Target",
+      "sublabel": "Boot 0x08000000/16KB · APP 0x08004000/47KB",
+      "pos": [340, 850],
+      "size": [250, 92],
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/STM32F103_OTA_Bootloader.uvprojx", "line": 279, "end_line": 280, "label": "Boot IROM1"},
+        {"path": "ADB1_OTA/Keil/APP/STM32F103_AI.uvprojx", "line": 279, "end_line": 280, "label": "APP IROM1"},
+        {"path": "ADB1_OTA/Project/Cold/OTA/inclue/ota_layout.h", "line": 6, "end_line": 11, "label": "共享布局"}
+      ]
+    },
+    {
+      "id": "hal_cmsis",
+      "type": "backend",
+      "label": "STM32 HAL / CMSIS",
+      "sublabel": "Flash · UART · GPIO · NVIC · VTOR · MSP",
+      "pos": [990, 850],
+      "size": [240, 92],
+      "sources": [
+        {"path": "ADB1_OTA/Keil/Boot/STM32F103_OTA_Bootloader.uvprojx", "line": 341, "end_line": 343, "label": "宏与头文件"},
+        {"path": "ADB1_OTA/Project/Cold/CMISS/STM32Cube_FW_F1_V1.8.0/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c", "line": 1, "label": "Flash HAL"},
+        {"path": "ADB1_OTA/Project/Cold/CMISS/STM32Cube_FW_F1_V1.8.0/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/arm/startup_stm32f103xb.s", "line": 1, "label": "启动文件"}
+      ]
+    }
+  ],
+  "connections": [
+    {"id": "module_uart", "from": "update_module", "to": "uart_stack", "label": "UART1 OTA 帧", "variant": "emphasis", "route": "straight"},
+    {"id": "uart_sdk", "from": "uart_stack", "to": "sdk_protocol", "label": "APP 运行时", "route": "straight"},
+    {"id": "sdk_ota", "from": "sdk_protocol", "to": "app_ota", "label": "PREPARE 回调", "variant": "emphasis", "route": "straight"},
+    {"id": "ota_meta", "from": "app_ota", "to": "metadata", "label": "PENDING / CONFIRMED", "variant": "security", "route": "straight"},
+    {"id": "meta_boot", "from": "metadata", "to": "boot_manager", "label": "启动状态", "variant": "security", "route": "straight"},
+    {"id": "boot_manager_protocol", "from": "boot_manager", "to": "boot_protocol", "label": "等待 / READY", "route": "straight"},
+    {"id": "boot_protocol_writer", "from": "boot_protocol", "to": "flash_writer", "label": "校验后的 DATA", "variant": "emphasis", "route": "straight"},
+    {"id": "writer_image", "from": "flash_writer", "to": "app_image", "label": "擦除 / 半字写入", "variant": "security", "route": "straight"},
+    {"id": "protocol_gate", "from": "boot_protocol", "to": "integrity_gate", "label": "FINISH", "variant": "security"},
+    {"id": "image_gate", "from": "app_image", "to": "integrity_gate", "label": "镜像字节 + 向量表", "variant": "security", "route": "straight"},
+    {"id": "gate_meta", "from": "integrity_gate", "to": "metadata", "label": "VERIFIED", "variant": "security", "fromSide": "top", "toSide": "right", "via": [[510, 620], [1230, 620], [1230, 348]]},
+    {"id": "boot_jump", "from": "boot_manager", "to": "app_main", "label": "VTOR + MSP + ResetHandler", "variant": "emphasis", "route": "straight"}
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Flash 布局",
+      "items": [
+        "Bootloader：0x08000000，16 KB",
+        "Application：0x08004000，最大 47 KB",
+        "Metadata：0x0800FC00，独立 1 KB 页"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "校验链",
+      "items": [
+        "每一协议帧先过 CRC16-CCITT",
+        "每个分片检查长度、偶数字节、连续偏移和边界",
+        "FINISH 再检查总长度、CRC32 与 Cortex-M3 向量合法性"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "升级后反应",
+      "items": [
+        "PREPARE 成功：LED1/LED2 交替闪烁，500 ms 后复位",
+        "Boot 等待/下载：LED1→LED2→LED3 跑马灯",
+        "VERIFIED APP：三灯闪烁 5 s 后写 CONFIRMED"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "限制与恢复",
+      "items": [
+        "64 KB 器件采用单 APP 槽位，没有 A/B 自动回滚",
+        "掉电或校验失败不会跳转不可信镜像，而是停留 Bootloader",
+        "升级模组可从 BOOT_READY/ACK 的 received_bytes 状态重新发送"
+      ]
+    }
+  ]
+}

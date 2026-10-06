@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\02-validation-workflow\\ADB1_OTA-program-validation-workflow.json",
+    "sha256": "460ec783f4ca63a5151a4dc663bb4536540bdfdd370104793818731a449b8d80",
+    "bytes": 12056
+  },
+  "artifact": {
+    "path": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\02-validation-workflow\\ADB1_OTA-program-validation-workflow.html",
+    "sha256": "74c8cb0c7ece15b91d73c83648c8c814a7c0b3fae69d5e3fff502807d8fa5fcc",
+    "bytes": 775637
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\02-validation-workflow\\adb1_ota-program-validation-workflow.finalize.json",
+    "summaryReceipt": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\02-validation-workflow\\adb1_ota-program-validation-workflow.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\02-validation-workflow\\adb1_ota-program-validation-workflow.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.0.1",
+    "availableVersion": "3.0.1",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-06T05:40:51.405Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 7809,
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "routesOverSuggestedBends": 2,
+      "routesOverSuggestedStretch": 1
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [],
+      "detours": [
+        {
+          "relationship": {
+            "id": "e_flash_finish",
+            "from": "flash_program",
+            "to": "finish_frame",
+            "label": "最后分片 ACK 后发送 FINISH",
+            "collectionIndex": 5,
+            "artifactIndex": 6
+          },
+          "bends": 3,
+          "stretch": 1
+        },
+        {
+          "relationship": {
+            "id": "e_guard_write",
+            "from": "data_frames",
+            "to": "flash_program",
+            "label": "帧 CRC16 合法；DATA_ACK 返回 next offset",
+            "collectionIndex": 6,
+            "artifactIndex": 7
+          },
+          "bends": 4,
+          "stretch": 1.187
+        },
+        {
+          "relationship": {
+            "id": "e_prepare_rx",
+            "from": "prepare_frame",
+            "to": "app_dispatch",
+            "label": "UART1",
+            "collectionIndex": 9,
+            "artifactIndex": 10
+          },
+          "bends": 2,
+          "stretch": 1.432
+        }
+      ],
+      "truncated": false
+    },
+    "hints": [
+      "flash_program → finish_frame needs 3 bends: move node flash_program or finish_frame so they share a row or column with matching centers, or sit diagonally with a clear corner.",
+      "data_frames → flash_program needs 4 bends: move node data_frames or flash_program so they share a row or column with matching centers, or sit diagonally with a clear corner.",
+      "prepare_frame → app_dispatch needs 2 bends: move node prepare_frame or app_dispatch so they share a row or column with matching centers, or sit diagonally with a clear corner."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

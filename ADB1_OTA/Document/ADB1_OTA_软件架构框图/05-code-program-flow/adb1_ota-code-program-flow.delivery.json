@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "d01f4150-c80c-409a-9711-6ac83c6a01ed",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.json",
+  "output": "C:\\Users\\LENOVO\\Documents\\Work\\Codex\\2026-10-04\\codex-version\\work\\archify-adb1-ota\\05-code-program-flow\\ADB1_OTA-code-program-flow.html",
+  "specification": {
+    "sha256": "584fbdba54d1d8757a448172339e97c334f479ffb0a9d2b8243f9b11c7c172ec",
+    "bytes": 5806
+  },
+  "artifact": {
+    "sha256": "0622344553cb11785742e384f90679978793a6d4970e5f580f6ca7baf383088b",
+    "bytes": 754096
+  }
+}

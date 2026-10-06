@@ -1,0 +1,58 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "ADB1 OTA 代码级程序框图",
+    "subtitle": "UART1 收包 → APP 准备 → Boot 下载 → 最终校验 → APP 试运行确认",
+    "locale": "zh-CN",
+    "output": "ADB1_OTA-code-program-flow.html",
+    "animation": "trace",
+    "visual_preset": "blueprint",
+    "quality_profile": "showcase",
+    "repository": {"url": "https://gitcode.com/Orange-341024489/BK7258_AI_Voice_Assistant.git", "link_mode": "local-only", "revision": "848dbfa74b15c13ca8e0ec8faa57a9877910c8f0"},
+    "viewBox": [1240, 400],
+    "views": [
+      {"id": "app", "label": "APP 准备", "focus": ["app_rx", "app_prepare"], "note": "APP 负责 UART1 批处理、协议 CRC16、PREPARE 参数门禁和 PENDING 元数据。"},
+      {"id": "boot", "label": "Boot 下载", "focus": ["data_write"], "note": "Boot 仅在非可信状态驻留；DATA 必须顺序、对齐、长度/边界合法后才写 Flash。"},
+      {"id": "finish", "label": "最终准入", "focus": ["activate_confirm"], "note": "总长、CRC32、MSP、ResetHandler 与 Thumb 位全部正确，才允许安全跳转并在 5 秒后确认。"}
+    ]
+  },
+  "lanes": [{"id": "flow", "label": "真实代码执行顺序：APP → Bootloader → APP"}],
+  "phases": [
+    {"id": "app_input", "label": "APP 接收与解析", "fromCol": 0, "toCol": 0},
+    {"id": "app_prepare", "label": "APP 准备与复位", "fromCol": 1, "toCol": 1, "variant": "security"},
+    {"id": "boot_update", "label": "Boot 下载、写入与校验", "fromCol": 2, "toCol": 2, "variant": "emphasis"},
+    {"id": "trusted_boot", "label": "启动确认", "fromCol": 3, "toCol": 3, "variant": "security"}
+  ],
+  "mainPath": ["app_rx", "app_prepare", "data_write", "activate_confirm"],
+  "semanticChecks": {"allowedRoots": ["app_rx"], "allowedTerminals": ["activate_confirm"], "requiredPaths": [{"from": "app_rx", "to": "activate_confirm"}]},
+  "nodes": [
+    {
+      "id": "app_rx", "lane": "flow", "col": 0, "type": "frontend", "label": "APP 接收与帧校验", "sublabel": "IRQ → Transport → SDK", "tag": "USART1", "width": 150,
+      "sources": [{"path": "ADB1_OTA/Project/Cold/Driver/src/stm32f1xx_it.c", "line": 134, "end_line": 143, "label": "USART1_IRQHandler"}, {"path": "ADB1_OTA/Project/Cold/Usart/src/usart_transport.c", "line": 94, "end_line": 160, "label": "接收与批处理"}, {"path": "ADB1_OTA/Project/Cold/WIFI/src/ad_sdk.c", "line": 877, "end_line": 976, "label": "SDK 解析与 CRC16"}]
+    },
+    {
+      "id": "app_prepare", "lane": "flow", "col": 1, "type": "security", "label": "PREPARE 与 PENDING", "sublabel": "门禁 → 元数据 → 复位", "tag": "size 0…47 KB", "width": 155,
+      "sources": [{"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 37, "end_line": 86, "label": "元数据、参数门禁与响应"}, {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 101, "end_line": 111, "label": "复位时序"}, {"path": "ADB1_OTA/Project/Cold/OTA/inclue/ota_layout.h", "line": 8, "end_line": 29, "label": "地址、容量和状态"}]
+    },
+    {
+      "id": "data_write", "lane": "flow", "col": 2, "type": "security", "label": "Boot 写入与 FINISH", "sublabel": "CRC16 → Flash → CRC32/向量", "tag": "不通过不写 VERIFIED", "width": 165,
+      "sources": [{"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 203, "end_line": 291, "label": "驻留、收帧、分派与 ACK"}, {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 135, "end_line": 180, "label": "擦写、CRC32 与向量表"}, {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 256, "end_line": 268, "label": "FINISH 门禁与响应"}]
+    },
+    {
+      "id": "activate_confirm", "lane": "flow", "col": 3, "type": "database", "label": "启动与 APP 确认", "sublabel": "VERIFIED → 跳转 → CONFIRMED", "tag": "三灯显示试运行", "width": 160,
+      "sources": [{"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 102, "end_line": 108, "label": "写 VERIFIED"}, {"path": "ADB1_OTA/Keil/Boot/bootloader_main.c", "line": 182, "end_line": 201, "label": "安全跳转"}, {"path": "ADB1_OTA/Project/Cold/OTA/src/app_ota.c", "line": 56, "end_line": 120, "label": "试运行与 CONFIRMED"}]
+    }
+  ],
+  "edges": [
+    {"id": "e_parse_prepare", "from": "app_rx", "to": "app_prepare", "label": "CRC16 合法 PREPARE", "variant": "security", "role": "main"},
+    {"id": "e_boot_data", "from": "app_prepare", "to": "data_write", "label": "PENDING + 系统复位", "variant": "emphasis", "role": "main"},
+    {"id": "e_data_activate", "from": "data_write", "to": "activate_confirm", "label": "CRC32 + 向量表通过", "variant": "security", "role": "main"}
+  ],
+  "cards": [
+    {"dot": "cyan", "title": "APP 关键函数", "items": ["usart_transport_process()：20 ms 串口空闲后交付数据", "ad_sdk_handle_rx_data()：帧头、版本、长度与 CRC16", "on_ota_message()：仅接受合法 PREPARE，写 PENDING 后安排复位"]},
+    {"dot": "amber", "title": "Boot 关键函数", "items": ["receive_and_process()：逐字节同步帧头并验证 CRC16", "program_data()：首片擦 47 页，半字写入，更新 running_crc", "application_valid()：MSP 在 SRAM、Reset 在 APP 且 Thumb 位为 1"]},
+    {"dot": "emerald", "title": "成功与反应", "items": ["FINISH 成功才写 0xFFFFFFF8（VERIFIED）并复位", "jump_to_application() 清中断/时基后设置 VTOR 和 MSP", "APP 三灯闪烁；稳定运行 5 秒写 0xFFFFFFF0（CONFIRMED）"]},
+    {"dot": "rose", "title": "失败处理与边界", "items": ["任一参数、Flash、CRC32 或向量表失败都不会提交 VERIFIED", "Bootloader 继续驻留并报告 BOOT_READY，需重新下发", "无签名、无防降级、无 A/B 回滚；CRC32 不回读整片 Flash"]}
+  ]
+}

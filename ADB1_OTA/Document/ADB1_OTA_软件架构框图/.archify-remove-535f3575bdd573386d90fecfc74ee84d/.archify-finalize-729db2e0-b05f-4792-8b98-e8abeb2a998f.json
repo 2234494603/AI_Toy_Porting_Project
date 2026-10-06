@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "running",
+  "type": "architecture",
+  "quality": "showcase",
+  "startedAt": "2026-10-04T10:23:27.732Z",
+  "specification": {
+    "path": "\\\\wsl.localhost\\Ubuntu\\home\\lenovo\\Project_Chen\\ADB1_OTA\\Document\\ADB1_OTA-code-architecture.json",
+    "sha256": "08f52fdf67c5f64aa630ca25062720964aeed35c91f5355e17f485c46d4dc96c",
+    "bytes": 11244
+  },
+  "artifact": {
+    "path": "\\\\wsl.localhost\\Ubuntu\\home\\lenovo\\Project_Chen\\ADB1_OTA\\Document\\ADB1_OTA-code-architecture.html"
+  },
+  "stages": {},
+  "diagnostics": [],
+  "evidence": {
+    "receipt": "\\\\wsl.localhost\\Ubuntu\\home\\lenovo\\Project_Chen\\ADB1_OTA\\Document\\ADB1_OTA-code-architecture.finalize.json",
+    "summaryReceipt": "\\\\wsl.localhost\\Ubuntu\\home\\lenovo\\Project_Chen\\ADB1_OTA\\Document\\ADB1_OTA-code-architecture.finalize-summary.json"
+  },
+  "visualReview": "not-requested"
+}
